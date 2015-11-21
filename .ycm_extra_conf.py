@@ -67,6 +67,7 @@ flags = [
 '-isystem',
 '/usr/lib/clang/3.7.0/include',
 '-isystem',
+'-I.',
 '/usr/include',
 # For OpenMPI
 '-pthread',
