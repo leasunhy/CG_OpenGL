@@ -218,9 +218,12 @@ int main() {
   return 0;
 }
 
+bool wireframe_mode = false;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
+  else if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
+    glPolygonMode(GL_FRONT_AND_BACK, (wireframe_mode = !wireframe_mode) ? GL_LINE : GL_FILL);
   else if (key >=0 && key < 1024) {
     if (action == GLFW_PRESS)
       keys[key] = true;
