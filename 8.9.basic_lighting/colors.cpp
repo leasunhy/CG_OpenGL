@@ -152,14 +152,12 @@ int main() {
     glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
     GLuint lightPosLoc = glGetUniformLocation(shaders.Program, "lightPos");
     glUniform3f(lightPosLoc, light_pos.x, light_pos.y, light_pos.z);
-    GLuint viewPosLoc = glGetUniformLocation(shaders.Program, "viewPos");
-    glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
 
     glm::mat4 model = glm::translate(glm::mat4(), cubePositions[0]);
     model = glm::rotate(model, (GLfloat)glm::radians(60.0f * current_frame),
                         glm::vec3(1.0f, 1.0f, 1.0f));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+    glm::mat3 normalMatrix = glm::mat3(view *glm::transpose(glm::inverse(model)));
     glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
     glBindVertexArray(lightVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
