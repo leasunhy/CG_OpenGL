@@ -70,6 +70,10 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath) {
 
 }
 
+Shader::~Shader() {
+    glDeleteProgram(this->Program);
+}
+
 void Shader::Use() {
     glUseProgram(this->Program);
 }
@@ -96,5 +100,15 @@ void Shader::SetUniform(const char * name, const glm::vec3& vec) {
 void Shader::SetUniform(const char * name, const glm::vec4& vec) {
   GLuint loc = this->Uniform(name);
   glUniform4f(loc, vec.x, vec.y, vec.z, vec.w);
+}
+
+void Shader::SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
+  GLuint loc = this->Uniform(name);
+  glUniform4f(loc, x, y, z, w);
+}
+
+void Shader::SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z) {
+  GLuint loc = this->Uniform(name);
+  glUniform3f(loc, x, y, z);
 }
 

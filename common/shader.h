@@ -13,6 +13,7 @@ class Shader
 
     // ctor
     Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
+    ~Shader();
 
     // use the program
     void Use();
@@ -23,6 +24,8 @@ class Shader
     void SetUniform(const char * name, const glm::mat3& mat);
     void SetUniform(const char * name, const glm::vec4& vec);
     void SetUniform(const char * name, const glm::vec3& vec);
+    void SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+    void SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z);
 };
 #endif
 
