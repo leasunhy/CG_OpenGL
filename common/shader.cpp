@@ -5,6 +5,9 @@
 
 #include "shader.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath) {
     std::string vertexCode;
     std::string fragmentCode;
@@ -32,7 +35,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath) {
 
     GLint success;
     GLchar infoLog[512];
-    
+
     // prepare vertex shader
     GLuint vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -69,5 +72,29 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath) {
 
 void Shader::Use() {
     glUseProgram(this->Program);
+}
+
+GLuint Shader::Uniform(const char *name) {
+    return glGetUniformLocation(this->Program, name);
+}
+
+void Shader::SetUniform(const char * name, const glm::mat4& mat) {
+    GLuint loc = this->Uniform(name);
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void Shader::SetUniform(const char * name, const glm::mat3& mat) {
+  GLuint loc = this->Uniform(name);
+  glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void Shader::SetUniform(const char * name, const glm::vec3& vec) {
+  GLuint loc = this->Uniform(name);
+  glUniform3f(loc, vec.x, vec.y, vec.z);
+}
+
+void Shader::SetUniform(const char * name, const glm::vec4& vec) {
+  GLuint loc = this->Uniform(name);
+  glUniform4f(loc, vec.x, vec.y, vec.z, vec.w);
 }
 
