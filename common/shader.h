@@ -26,6 +26,7 @@ class Shader
     void SetUniform(const char * name, const glm::vec3& vec);
     void SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     void SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z);
+    void SetUniform(const char * name, GLfloat x);
 };
 #endif
 
