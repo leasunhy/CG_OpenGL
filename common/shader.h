@@ -18,7 +18,7 @@ class Shader
     // use the program
     void Use();
 
-    GLuint Uniform(const char * name);
+    GLint Uniform(const char * name);
 
     void SetUniform(const char * name, const glm::mat4& mat);
     void SetUniform(const char * name, const glm::mat3& mat);

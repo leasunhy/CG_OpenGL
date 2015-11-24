@@ -52,7 +52,8 @@ void Mesh::Draw(Shader& shader) {
     // GL_TEXTUREi = GL_TEXTURE0 + i
     glActiveTexture(GL_TEXTURE0 + i);
     const std::string& name = this->textures[i].type;
-    std::stringstream ss("material." + name);
+    std::stringstream ss;
+    ss << "material." << name;
     if (name == "texture_diffuse")
       ss << ++diffuse_count;
     else if (name == "texture_specular")
@@ -67,7 +68,6 @@ void Mesh::Draw(Shader& shader) {
   glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }
-
 
 Model::Model(const GLchar * path) {
   this->loadModel(path);
@@ -152,16 +152,16 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat,
   for (GLuint i = 0; i < mat->GetTextureCount(type); ++i) {
     aiString str;
     mat->GetTexture(type, i, &str);
-    auto iter = loaded_textures.find(str);
+    auto iter = loaded_textures.find(str.C_Str());
     if (iter != loaded_textures.end()) {
       textures.push_back(iter->second);
       continue;
     }
     Texture texture;
-    texture.id = load_texture((this->directory + '/' + str.C_Str()).c_str());
+    texture.id = TextureFromFile(str.C_Str(), this->directory);
     texture.type = type_name;
     textures.push_back(texture);
-    loaded_textures[str] = texture;
+    loaded_textures[str.C_Str()] = texture;
   }
   return textures;
 }

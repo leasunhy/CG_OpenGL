@@ -52,7 +52,7 @@ class Model
  private:
   std::vector<Mesh> meshes;
   std::string directory;
-  std::map<aiString, Texture> loaded_textures;
+  std::map<std::string, Texture> loaded_textures;
 
   void loadModel(const std::string& path);
   void processNodes(const aiNode* node, const aiScene* scene);
