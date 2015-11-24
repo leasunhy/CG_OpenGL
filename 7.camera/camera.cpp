@@ -168,7 +168,7 @@ int main() {
     glfwPollEvents();
     do_movement();
 
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader.Use();
@@ -191,8 +191,6 @@ int main() {
     GLuint projectionLoc = glGetUniformLocation(shader.Program, "projection");
     // transformation
     glm::mat4 view = camera.GetViewMatrix();
-    //glm::mat4 view = glm::lookAt(camera.Position, camera.Position + camera.Front, glm::vec3(0.0f, 1.0f, 0.0f));
-    //glm::mat4 view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
                            (GLfloat)windowWidth / (GLfloat)windowHeight, 0.1f, 100.0f);
 
@@ -203,7 +201,7 @@ int main() {
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     for (int i = 0; i < 10; i++) {
       glm::mat4 model = glm::translate(glm::mat4(), cubePositions[i]);
-      GLfloat angle = glm::radians((GLfloat)glfwGetTime() * 20.0f * (i + 1));
+      GLfloat angle = 1;//glm::radians((GLfloat)glfwGetTime() * 20.0f * (i + 1));
       model = glm::rotate(model, angle, glm::vec3(0.5f, 1.0f, 0.0f));
       glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
       glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -218,13 +216,20 @@ int main() {
   return 0;
 }
 
-bool wireframe_mode = false;
+int display_mode = 0;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
-  else if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
-    glPolygonMode(GL_FRONT_AND_BACK, (wireframe_mode = !wireframe_mode) ? GL_LINE : GL_FILL);
-  else if (key >=0 && key < 1024) {
+  else if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+    display_mode += 1;
+    display_mode %= 3;
+    if (display_mode == 0)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    else if (display_mode == 1)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+  } else if (key >=0 && key < 1024) {
     if (action == GLFW_PRESS)
       keys[key] = true;
     else if (action == GLFW_RELEASE)
