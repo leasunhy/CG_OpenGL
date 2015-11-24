@@ -145,7 +145,7 @@ int main() {
     lightColor.r = sin(current_frame * 2.0f);
     lightColor.g = sin(current_frame * 0.7f);
     lightColor.b = sin(current_frame * 1.3f);
-    shaders.SetUniform("light.position", light_pos);
+    shaders.SetUniform("light.position", glm::vec3(view * glm::vec4(light_pos, 1.0f)));
     shaders.SetUniform("light.ambient", lightColor * 0.1f);
     shaders.SetUniform("light.diffuse", lightColor * 0.5f);
     shaders.SetUniform("light.specular", 1.0f, 1.0f, 1.0f);
