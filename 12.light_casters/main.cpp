@@ -139,9 +139,9 @@ int main() {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //GLfloat light_pos_angle = glm::radians(60.0f * current_frame);
-    //glm::vec3 light_pos(1.2f + sin(light_pos_angle), 1.0f, 2.0f + cos(light_pos_angle));
-    glm::vec3 light_pos(-0.2f, -1.0f, -0.3f);
+    GLfloat light_pos_angle = glm::radians(60.0f * current_frame);
+    glm::vec3 light_pos(1.2f + sin(light_pos_angle), 1.0f, 2.0f + cos(light_pos_angle));
+    //glm::vec3 light_dir(-0.2f, -1.0f, -0.3f);
 
     // draw common container
     shaders.Use();
@@ -158,10 +158,14 @@ int main() {
     //lightColor.g = sin(current_frame * 0.7f);
     //lightColor.b = sin(current_frame * 1.3f);
     shaders.SetUniform("ViewPos", camera.Position);
-    shaders.SetUniform("light.direction", light_pos);
+    shaders.SetUniform("light.position", light_pos);
+    //shaders.SetUniform("light.direction", light_dir);
     shaders.SetUniform("light.ambient", lightColor * 0.1f);
     shaders.SetUniform("light.diffuse", lightColor * 0.5f);
     shaders.SetUniform("light.specular", 1.0f, 1.0f, 1.0f);
+    shaders.SetUniform("light.constant", 1.0f);
+    shaders.SetUniform("light.linear", 0.09f);
+    shaders.SetUniform("light.quadratic", 0.032f);
 
     shaders.SetUniform("material.ambient", 1.0f, 0.5f, 0.31f);
     shaders.SetUniform("material.shininess", 32.0f);
