@@ -116,3 +116,8 @@ void Shader::SetUniform(const char * name, GLfloat x) {
   GLuint loc = this->Uniform(name);
   glUniform1f(loc, x);
 }
+
+void Shader::SetUniform(const char * name, int x) {
+  GLuint loc = this->Uniform(name);
+  glUniform1i(loc, x);
+}
