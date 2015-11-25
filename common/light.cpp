@@ -1,11 +1,6 @@
 #include <iostream>
 #include "common/light.h"
 
-static std::ostream& operator<<(std::ostream& out, const glm::vec3& a) {
-  out << a.x << " " << a.y << " " << a.z;
-  return out;
-}
-
 Light::~Light() {}
 
 DirLight::DirLight(glm::vec3 direction, glm::vec3 ambient,
@@ -40,15 +35,7 @@ SpotLight::SpotLight(glm::vec3 position, glm::vec3 direction,
                      glm::vec3 specular, float cutoff,
                      float outerCutoff)
   : position(position), direction(direction), ambient(specular * 0.1f),
-    diffuse(specular * 0.5f), specular(specular), cutoff(cutoff), outerCutoff(outerCutoff) {
-  std::cout << "position: " << position << std::endl;
-  std::cout << "direction: " << direction << std::endl;
-  std::cout << "ambient: " << ambient << std::endl;
-  std::cout << "diffuse: " << diffuse << std::endl;
-  std::cout << "specular: " << specular << std::endl;
-  std::cout << "cutoff: " << cutoff << std::endl;
-  std::cout << "outer: " << outerCutoff << std::endl;
-}
+    diffuse(specular * 0.5f), specular(specular), cutoff(cutoff), outerCutoff(outerCutoff) {}
 
 
 
