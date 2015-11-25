@@ -42,26 +42,33 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indic
                         (GLvoid*)offsetof(Vertex, TexCoords));
   glEnableVertexAttribArray(2);
 
+  // vertex colors
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        (GLvoid*)offsetof(Vertex, Colors));
+  glEnableVertexAttribArray(3);
+
   glBindVertexArray(0);
 }
 
-void Mesh::Draw(Shader& shader) {
+void Mesh::Draw(Shader& shader, bool useTexture) {
   GLuint diffuse_count = 0;
   GLuint specular_count = 0;
-  for (size_t i = 0; i < this->textures.size(); ++i) {
-    // GL_TEXTUREi = GL_TEXTURE0 + i
-    glActiveTexture(GL_TEXTURE0 + i);
-    const std::string& name = this->textures[i].type;
-    std::stringstream ss;
-    ss << "material." << name;
-    if (name == "texture_diffuse")
-      ss << ++diffuse_count;
-    else if (name == "texture_specular")
-      ss << ++specular_count;
-    shader.SetUniform(ss.str().c_str(), (int)i);
-    glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
+  if (useTexture) {
+    for (size_t i = 0; i < this->textures.size(); ++i) {
+      // GL_TEXTUREi = GL_TEXTURE0 + i
+      glActiveTexture(GL_TEXTURE0 + i);
+      const std::string& name = this->textures[i].type;
+      std::stringstream ss;
+      ss << "material." << name;
+      if (name == "texture_diffuse")
+        ss << ++diffuse_count;
+      else if (name == "texture_specular")
+        ss << ++specular_count;
+      shader.SetUniform(ss.str().c_str(), (int)i);
+      glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
+    }
+    glActiveTexture(GL_TEXTURE0);
   }
-  glActiveTexture(GL_TEXTURE0);
 
   // draw!
   glBindVertexArray(this->VAO);
@@ -73,9 +80,9 @@ Model::Model(const GLchar * path) {
   this->loadModel(path);
 }
 
-void Model::Draw(Shader& shader) {
+void Model::Draw(Shader& shader, bool useTexture) {
   for (auto& m : this->meshes)
-    m.Draw(shader);
+    m.Draw(shader, useTexture);
 }
 
 void Model::loadModel(const std::string& path) {
@@ -93,6 +100,7 @@ void Model::loadModel(const std::string& path) {
 }
 
 void Model::processNodes(const aiNode* node, const aiScene* scene) {
+  std::cout << "Processing nodes..." << std::endl;
   for (GLuint i = 0; i < node->mNumMeshes; ++i) {
     const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
     this->processMesh(mesh, scene);
@@ -123,6 +131,18 @@ void Model::processMesh(const aiMesh* mesh, const aiScene* scene) {
     } else {
       vertex.TexCoords.x = 0.0f;
       vertex.TexCoords.y = 0.0f;
+    }
+
+    if (mesh->mColors && mesh->mColors[0]) {
+      vertex.Colors.r = mesh->mColors[0][i].r;
+      vertex.Colors.g = mesh->mColors[0][i].g;
+      vertex.Colors.b = mesh->mColors[0][i].b;
+      vertex.Colors.a = mesh->mColors[0][i].a;
+    } else {
+      vertex.Colors.r = 1.0f;
+      vertex.Colors.g = 1.0f;
+      vertex.Colors.b = 1.0f;
+      vertex.Colors.a = 1.0f;
     }
 
     vertices.push_back(vertex);
@@ -158,7 +178,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat,
       continue;
     }
     Texture texture;
-    texture.id = TextureFromFile(str.C_Str(), this->directory);
+    texture.id = load_texture(this->directory + '/' + str.C_Str());
     texture.type = type_name;
     textures.push_back(texture);
     loaded_textures[str.C_Str()] = texture;

@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
-
+#include <IL/il.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,6 +27,8 @@ void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 void do_movement(double delta_time);
 
+bool flash_light_on = true;
+
 int main() {
   GLFWwindow * window = initWindow(windowWidth, windowHeight);
   if (!window) {
@@ -39,6 +41,9 @@ int main() {
   glfwSetScrollCallback(window, scroll_callback);
 
   glEnable(GL_DEPTH_TEST);
+
+  // prepare texture loading library(devil)
+  ilInit();
 
   // prepare an array of vertices
   GLfloat vertices[] = {
@@ -121,9 +126,14 @@ int main() {
   Shader shaders("shader.vert", "shader.frag");
   Shader lightShaders("lightShader.vert", "lightShader.frag");
 
-  std::cout << "Loading nanosuit..." << std::endl;
-  Model nanosuit("nanosuit/nanosuit.obj");
-  std::cout << "Nanosuit loaded!" << std::endl;
+  std::cout << "Input path: ";
+  std::string path;
+  std::getline(std::cin, path);
+  std::cout << "path is: " << path << std::endl;
+
+  std::cout << "Loading model..." << std::endl;
+  Model themodel(path.c_str());
+  std::cout << "Model loaded!" << std::endl;
 
   double last_frame = glfwGetTime();
   while (!glfwWindowShouldClose(window)) {
@@ -175,16 +185,17 @@ int main() {
 
     shaders.SetUniform("pointLightCount", 1);
 
+    glm::vec3 spotLight((GLfloat)flash_light_on);
     // spot light
-    shaders.SetUniform("spotLight.ambient", 0.1f, 0.1f, 0.1f);
-    shaders.SetUniform("spotLight.diffuse", 0.5f, 0.5f, 0.5f);
-    shaders.SetUniform("spotLight.specular", 1.0f, 1.0f, 1.0f);
+    shaders.SetUniform("spotLight.ambient", spotLight * 0.1f);
+    shaders.SetUniform("spotLight.diffuse", spotLight * 0.5f);
+    shaders.SetUniform("spotLight.specular", spotLight);
     shaders.SetUniform("spotLight.position", camera.Position);
     shaders.SetUniform("spotLight.direction", camera.Front);
     shaders.SetUniform("spotLight.cutoff", glm::cos(glm::radians(12.5f)));
     shaders.SetUniform("spotLight.outerCutoff", glm::cos(glm::radians(17.5f)));
 
-    shaders.SetUniform("material.shininess", 32.0f);
+    shaders.SetUniform("material.shininess", 10000.0f);
 
     glm::mat4 model = glm::translate(glm::mat4(), glm::vec3(0.2f, -1.0f, 1.0f));
     model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
@@ -192,7 +203,7 @@ int main() {
     glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
     shaders.SetUniform("normalMatrix", normalMatrix);
 
-    nanosuit.Draw(shaders);
+    themodel.Draw(shaders);
 
     // draw lamp
     lightShaders.Use();
@@ -215,11 +226,22 @@ int main() {
   return 0;
 }
 
-
+int display_mode = 0;
+int point_size = 1;
 void key_callback(GLFWwindow * window, int key, int scancode, int action, int mode) {
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GL_TRUE);
-  else if (key >= 0 && key < 1024) {
+  } else if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+    display_mode = (display_mode + 1) % 3;
+    glPolygonMode(GL_FRONT_AND_BACK,
+            (display_mode == 0) ? GL_FILL : ((display_mode == 1) ? GL_LINE : GL_POINT));
+  } else if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS) {
+    glPointSize(++point_size);
+  } else if (key == GLFW_KEY_MINUS && action == GLFW_PRESS) {
+    glPointSize(point_size = (point_size - 1 > 0) ? (point_size - 1) : 1);
+  } else if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
+    flash_light_on = !flash_light_on;
+  } else if (key >= 0 && key < 1024) {
     if (action == GLFW_PRESS)
       key_pressed[key] = true;
     else if (action == GLFW_RELEASE)

@@ -18,6 +18,7 @@ struct Vertex
   glm::vec3 Position;
   glm::vec3 Normal;
   glm::vec3 TexCoords;
+  glm::vec4 Colors;
 };
 
 struct Texture
@@ -37,7 +38,7 @@ class Mesh
        const std::vector<GLuint>& indices,
        const std::vector<Texture>& textures);
 
-  void Draw(Shader& shader);
+  void Draw(Shader& shader, bool useTexture = true);
 
  private:
   GLuint VAO, VBO, EBO;
@@ -47,7 +48,7 @@ class Model
 {
  public:
   Model(const GLchar * path);
-  void Draw(Shader& shader);
+  void Draw(Shader& shader, bool useTexture = true);
 
  private:
   std::vector<Mesh> meshes;
