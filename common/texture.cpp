@@ -25,21 +25,22 @@ GLuint load_texture(const std::string& filename, GLenum target) {
     std::cerr << "unable to load texture: " << filename << std::endl;
   width = ilGetInteger(IL_IMAGE_WIDTH);
   height = ilGetInteger(IL_IMAGE_HEIGHT);
-  int memory_needed = width * height * 3 * sizeof(unsigned char);
+  int memory_needed = width * height * 4 * sizeof(unsigned char);
   unsigned char * data = new unsigned char[memory_needed];
-  ilCopyPixels(0, 0, 0, width, height, 1, IL_RGB, IL_UNSIGNED_BYTE, data);
+  ilCopyPixels(0, 0, 0, width, height, 1, IL_RGBA, IL_UNSIGNED_BYTE, data);
 
   GLuint id;
   glGenTextures(1, &id);
   glBindTexture(target, id);
-  glTexImage2D(target, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+  glTexImage2D(target, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
   glGenerateMipmap(target);
+
   //SOIL_free_image_data(data);
 
   ilDeleteImages(1, &ihandle);
   delete [] data;
+
   glBindTexture(target, 0);
   return id;
 }
-
 

@@ -21,10 +21,14 @@ struct Vertex
   glm::vec4 Colors;
 };
 
-struct Texture
+class Texture
 {
+ public:
   GLuint id;
   std::string type;
+  Texture() = default;
+  Texture(GLuint id, const std::string& type = "");
+  void Bind(GLenum num);
 };
 
 class Mesh

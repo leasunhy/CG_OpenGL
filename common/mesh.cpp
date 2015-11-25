@@ -10,6 +10,14 @@
 #include "common/mesh.h"
 #include "common/texture.h"
 
+Texture::Texture(GLuint id, const std::string& type)
+  : id(id), type(type) {}
+
+void Texture::Bind(GLenum num) {
+  glActiveTexture(num);
+  glBindTexture(GL_TEXTURE_2D, this->id);
+}
+
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices,
            const std::vector<Texture>& textures)
   : vertices(vertices), indices(indices), textures(textures) {
