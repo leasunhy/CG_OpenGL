@@ -64,7 +64,7 @@ void Mesh::Draw(Shader& shader, bool useTexture) {
         ss << ++diffuse_count;
       else if (name == "texture_specular")
         ss << ++specular_count;
-      shader.SetUniform(ss.str().c_str(), (int)i);
+      shader.SetUniform(ss.str(), (int)i);
       glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);

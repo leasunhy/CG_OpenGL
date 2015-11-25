@@ -2,6 +2,7 @@
 #define SHADER_H
 
 
+#include <string>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
@@ -18,16 +19,16 @@ class Shader
     // use the program
     void Use();
 
-    GLint Uniform(const char * name);
+    GLint Uniform(const std::string& name);
 
-    void SetUniform(const char * name, const glm::mat4& mat);
-    void SetUniform(const char * name, const glm::mat3& mat);
-    void SetUniform(const char * name, const glm::vec4& vec);
-    void SetUniform(const char * name, const glm::vec3& vec);
-    void SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z);
-    void SetUniform(const char * name, GLfloat x);
-    void SetUniform(const char * name, int x);
+    void SetUniform(const std::string& name, const glm::mat4& mat);
+    void SetUniform(const std::string& name, const glm::mat3& mat);
+    void SetUniform(const std::string& name, const glm::vec4& vec);
+    void SetUniform(const std::string& name, const glm::vec3& vec);
+    void SetUniform(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+    void SetUniform(const std::string& name, GLfloat x, GLfloat y, GLfloat z);
+    void SetUniform(const std::string& name, GLfloat x);
+    void SetUniform(const std::string& name, int x);
 };
 #endif
 

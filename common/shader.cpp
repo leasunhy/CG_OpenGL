@@ -78,49 +78,49 @@ void Shader::Use() {
     glUseProgram(this->Program);
 }
 
-GLint Shader::Uniform(const char *name) {
-    GLint res = glGetUniformLocation(this->Program, name);
-    if (res == -1)
-      std::cerr << "Error: No such uniform: " << name << std::endl;
-    return res;
+GLint Shader::Uniform(const std::string& name) {
+  GLint res = glGetUniformLocation(this->Program, name.c_str());
+  if (res == -1)
+    std::cerr << "Error: No such uniform: " << name << std::endl;
+  return res;
 }
 
-void Shader::SetUniform(const char * name, const glm::mat4& mat) {
-    GLint loc = this->Uniform(name);
-    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
+void Shader::SetUniform(const std::string& name, const glm::mat4& mat) {
+  GLint loc = this->Uniform(name);
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void Shader::SetUniform(const char * name, const glm::mat3& mat) {
+void Shader::SetUniform(const std::string& name, const glm::mat3& mat) {
   GLint loc = this->Uniform(name);
   glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void Shader::SetUniform(const char * name, const glm::vec3& vec) {
+void Shader::SetUniform(const std::string& name, const glm::vec3& vec) {
   GLint loc = this->Uniform(name);
   glUniform3f(loc, vec.x, vec.y, vec.z);
 }
 
-void Shader::SetUniform(const char * name, const glm::vec4& vec) {
+void Shader::SetUniform(const std::string& name, const glm::vec4& vec) {
   GLint loc = this->Uniform(name);
   glUniform4f(loc, vec.x, vec.y, vec.z, vec.w);
 }
 
-void Shader::SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
+void Shader::SetUniform(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
   GLint loc = this->Uniform(name);
   glUniform4f(loc, x, y, z, w);
 }
 
-void Shader::SetUniform(const char * name, GLfloat x, GLfloat y, GLfloat z) {
+void Shader::SetUniform(const std::string& name, GLfloat x, GLfloat y, GLfloat z) {
   GLint loc = this->Uniform(name);
   glUniform3f(loc, x, y, z);
 }
 
-void Shader::SetUniform(const char * name, GLfloat x) {
+void Shader::SetUniform(const std::string& name, GLfloat x) {
   GLint loc = this->Uniform(name);
   glUniform1f(loc, x);
 }
 
-void Shader::SetUniform(const char * name, int x) {
+void Shader::SetUniform(const std::string& name, int x) {
   GLint loc = this->Uniform(name);
   glUniform1i(loc, x);
 }
