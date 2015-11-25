@@ -15,6 +15,7 @@
 #include "common/shader.h"
 #include "common/camera.h"
 #include "common/model.h"
+#include "common/texture.h"
 #include "common/light.h"
 
 const int windowWidth = 1600;
@@ -44,7 +45,7 @@ int main() {
   glEnable(GL_DEPTH_TEST);
 
   // prepare texture loading library(devil)
-  ilInit();
+  init_texture_loading();
 
   // prepare an array of vertices
   GLfloat vertices[] = {
@@ -112,15 +113,19 @@ int main() {
 
   glBindVertexArray(0);
 
-  Shader shaders("shader.vert", "shader.frag");
-  //Shader colorShaders("shaderColor.vert", "shaderColor.frag");
-  Shader lightShaders("lightShader.vert", "lightShader.frag");
+  Shader shaders("data/shaders/shader.vert", "data/shaders/shader.frag");
+  Shader colorShaders("data/shaders/shaderColor.vert", "data/shaders/shaderColor.frag");
+  Shader domeShaders("data/shaders/dome.vert", "data/shaders/dome.frag");
+  Shader lightShaders("data/shaders/lightShader.vert", "data/shaders/lightShader.frag");
 
   std::cout << "Loading models..." << std::endl;
-  //Model dome("data/geodesic_dome.obj");
-  //Model landscape("data/landscape.obj");
-  Model landscape("../14.model_loading/nanosuit/nanosuit.obj");
+  Model dome("data/models/geodesic_dome.obj");
+  Model landscape("data/models/landscape.obj");
   std::cout << "Models loaded!" << std::endl;
+
+  std::cout << "Loading extra textures..." << std::endl;
+  GLuint domeColor = load_texture("data/textures/sky.png");
+  GLuint domeGlow = load_texture("data/textures/glow.png");
 
   double last_frame = glfwGetTime();
   while (!glfwWindowShouldClose(window)) {
@@ -138,45 +143,83 @@ int main() {
     GLfloat light_pos_angle = glm::radians(60.0f * current_frame);
     glm::vec3 light_pos(1.2f + sin(light_pos_angle), 0.0f, 2.0f + cos(light_pos_angle));
 
-    // draw common container
-    shaders.Use();
-
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
                                 (GLfloat)windowWidth / (GLfloat)windowHeight,
                                 0.01f, 1000.0f);
 
-    shaders.SetUniform("view", view);
-    shaders.SetUniform("projection", projection);
 
     glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-    //lightColor.r = sin(current_frame * 2.0f);
-    //lightColor.g = sin(current_frame * 0.7f);
-    //lightColor.b = sin(current_frame * 1.3f);
-    shaders.SetUniform("ViewPos", camera.Position);
+    lightColor.r = sin(current_frame * 2.0f);
+    lightColor.g = sin(current_frame * 0.7f);
+    lightColor.b = sin(current_frame * 1.3f);
 
     // directional light
     DirLight dirLight(glm::vec3(-0.2f, -1.0f, -0.3f));
-    dirLight.SetUniforms(shaders, "dirLight");
 
     // point light
     PointLight pointLight(light_pos, lightColor * 0.5f);
-    pointLight.SetUniforms(shaders, "pointLights[0]");
 
-    shaders.SetUniform("pointLightCount", 1);
 
     SpotLight spotLight(camera.Position, camera.Front,
                         glm::vec3((GLfloat)flash_light_on));
+
+    shaders.Use();
+    shaders.SetUniform("view", view);
+    shaders.SetUniform("projection", projection);
+    shaders.SetUniform("ViewPos", camera.Position);
+    dirLight.SetUniforms(shaders, "dirLight");
+    pointLight.SetUniforms(shaders, "pointLights[0]");
+    shaders.SetUniform("pointLightCount", 1);
     spotLight.SetUniforms(shaders, "spotLight");
+    shaders.SetUniform("material.shininess", 16.0f);
 
-    shaders.SetUniform("material.shininess", 10000.0f);
+    colorShaders.Use();
+    colorShaders.SetUniform("view", view);
+    colorShaders.SetUniform("projection", projection);
+    colorShaders.SetUniform("ViewPos", camera.Position);
+    dirLight.SetUniforms(colorShaders, "dirLight");
+    pointLight.SetUniforms(colorShaders, "pointLights[0]");
+    colorShaders.SetUniform("pointLightCount", 1);
+    spotLight.SetUniforms(colorShaders, "spotLight");
+    colorShaders.SetUniform("material.shininess", 16.0f);
 
-    glm::mat4 model = glm::translate(glm::mat4(), glm::vec3(0.2f, -1.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+    // make the dome and landscape pinned
+    glm::mat4 pinnedView = glm::lookAt(glm::vec3(0.0f), camera.Front,
+                                       glm::vec3(0.0f, 1.0f, 0.0f));
+
+    colorShaders.Use();
+    glm::mat4 model;
+    model = glm::translate(glm::mat4(), glm::vec3(0.0f, -0.4f, 0.0f));
+    model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
     glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-    shaders.SetUniform("model", model);
-    shaders.SetUniform("normalMatrix", normalMatrix);
-    landscape.Draw(shaders);
+    colorShaders.SetUniform("view", pinnedView);
+    colorShaders.SetUniform("model", model);
+    colorShaders.SetUniform("normalMatrix", normalMatrix);
+    landscape.Draw(colorShaders, false);
+
+    domeShaders.Use();
+    domeShaders.SetUniform("view", pinnedView);
+    domeShaders.SetUniform("projection", projection);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, domeColor);
+    domeShaders.SetUniform("domeColor", 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, domeGlow);
+    domeShaders.SetUniform("glow", 1);
+    glActiveTexture(GL_TEXTURE0);
+    glm::mat4 dmodel;
+    dmodel = glm::translate(dmodel, glm::vec3(0.0f, -1.0f, 0.0f));
+    dmodel = glm::scale(dmodel, glm::vec3(5.0f, 5.0f, 5.0f));
+    domeShaders.SetUniform("model", dmodel);
+    float sunAngle = glm::radians(current_frame * 30.0f);
+    //glm::vec3 sunPos(1.0f * glm::cos(sunAngle), 1.0f * glm::sin(sunAngle), 0.0f);
+    glm::mat4 sunModel;
+    sunModel = glm::translate(sunModel, glm::vec3(-90.0f, -90.0f, 0.0f));
+    sunModel = glm::rotate(sunModel, sunAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+    domeShaders.SetUniform("sunPos",
+                           glm::vec3(sunModel * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)));
+    dome.Draw(domeShaders, false);
 
     // draw lamp
     lightShaders.Use();
