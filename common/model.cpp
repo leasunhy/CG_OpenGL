@@ -71,6 +71,7 @@ void Mesh::Draw(Shader& shader, bool useTexture) {
   }
 
   // draw!
+  shader.Use();
   glBindVertexArray(this->VAO);
   glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
