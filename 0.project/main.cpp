@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -14,6 +15,8 @@
 #include "common/window.h"
 #include "common/shader.h"
 #include "common/camera.h"
+#include "common/sprite.h"
+#include "common/mesh.h"
 #include "common/model.h"
 #include "common/texture.h"
 #include "common/light.h"
@@ -26,10 +29,11 @@ void key_callback(GLFWwindow * window, int key, int scancode, int action, int mo
 void cursor_callback(GLFWwindow * window, double xpos, double ypos);
 void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera defaultCamera(glm::vec3(0.0f, 1.0f, 3.0f));
+Camera camera(defaultCamera);
 void do_movement(double delta_time);
 
-bool flash_light_on = true;
+bool flash_light_on = false;
 
 int main() {
   GLFWwindow * window = initWindow(windowWidth, windowHeight);
@@ -117,15 +121,33 @@ int main() {
   Shader colorShaders("data/shaders/shaderColor.vert", "data/shaders/shaderColor.frag");
   Shader domeShaders("data/shaders/dome.vert", "data/shaders/dome.frag");
   Shader lightShaders("data/shaders/lightShader.vert", "data/shaders/lightShader.frag");
+  Shader spriteShaders("data/shaders/spriteShader.vert", "data/shaders/spriteShader.frag");
 
   std::cout << "Loading models..." << std::endl;
   Model dome("data/models/geodesic_dome.obj");
   Model landscape("data/models/landscape.obj");
+  Model nanosuit("../14.model_loading/nanosuit/nanosuit.obj");
   std::cout << "Models loaded!" << std::endl;
 
   std::cout << "Loading extra textures..." << std::endl;
   GLuint domeColor = load_texture("data/textures/sky.png");
   GLuint domeGlow = load_texture("data/textures/glow.png");
+  GLuint domeStar = load_texture("data/textures/star.png");
+  glBindTexture(GL_TEXTURE_2D, domeColor);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+  glBindTexture(GL_TEXTURE_2D, domeGlow);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+  glBindTexture(GL_TEXTURE_2D, domeStar);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+  Sprite sun("data/textures/sun.png");
+  Sprite moon("data/textures/moon.png");
+  // enable blending!
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   double last_frame = glfwGetTime();
   while (!glfwWindowShouldClose(window)) {
@@ -170,9 +192,13 @@ int main() {
     shaders.SetUniform("ViewPos", camera.Position);
     dirLight.SetUniforms(shaders, "dirLight");
     pointLight.SetUniforms(shaders, "pointLights[0]");
-    shaders.SetUniform("pointLightCount", 1);
+    shaders.SetUniform("pointLightCount", 0);
     spotLight.SetUniforms(shaders, "spotLight");
     shaders.SetUniform("material.shininess", 16.0f);
+    glm::mat4 nmodel = glm::translate(glm::mat4(), glm::vec3(-1.2f, -1.0f, -2.0f));;
+    shaders.SetUniform("model", nmodel);
+
+    //nanosuit.Draw(shaders);
 
     colorShaders.Use();
     colorShaders.SetUniform("view", view);
@@ -180,7 +206,7 @@ int main() {
     colorShaders.SetUniform("ViewPos", camera.Position);
     dirLight.SetUniforms(colorShaders, "dirLight");
     pointLight.SetUniforms(colorShaders, "pointLights[0]");
-    colorShaders.SetUniform("pointLightCount", 1);
+    colorShaders.SetUniform("pointLightCount", 0);
     spotLight.SetUniforms(colorShaders, "spotLight");
     colorShaders.SetUniform("material.shininess", 16.0f);
 
@@ -190,16 +216,26 @@ int main() {
 
     colorShaders.Use();
     glm::mat4 model;
-    model = glm::translate(glm::mat4(), glm::vec3(0.0f, -0.4f, 0.0f));
-    model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+    model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
     glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-    colorShaders.SetUniform("view", pinnedView);
+    colorShaders.SetUniform("view", view);
     colorShaders.SetUniform("model", model);
     colorShaders.SetUniform("normalMatrix", normalMatrix);
     landscape.Draw(colorShaders, false);
 
+    float sunAngle = current_frame * 30.0f;
+    glm::mat4 sunModel;
+    sunModel = glm::rotate(sunModel, glm::radians(sunAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    sunModel = glm::translate(sunModel, glm::vec3(2.6f, 2.6f, 0.0f));
+    sunModel = glm::scale(sunModel, glm::vec3(0.7f, 0.7f, 0.7f));
+    float moonAngle = sunAngle + 180.0f;
+    glm::mat4 moonModel;
+    moonModel = glm::rotate(moonModel, glm::radians(moonAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    moonModel = glm::translate(moonModel, glm::vec3(2.6f, 2.6f, 0.0f));
+    moonModel = glm::scale(moonModel, glm::vec3(0.7f, 0.7f, 0.7f));
+
     domeShaders.Use();
-    domeShaders.SetUniform("view", pinnedView);
+    domeShaders.SetUniform("view", view);
     domeShaders.SetUniform("projection", projection);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, domeColor);
@@ -209,19 +245,35 @@ int main() {
     domeShaders.SetUniform("glow", 1);
     glActiveTexture(GL_TEXTURE0);
     glm::mat4 dmodel;
-    dmodel = glm::translate(dmodel, glm::vec3(0.0f, -1.0f, 0.0f));
     dmodel = glm::scale(dmodel, glm::vec3(5.0f, 5.0f, 5.0f));
     domeShaders.SetUniform("model", dmodel);
-    float sunAngle = glm::radians(current_frame * 30.0f);
-    //glm::vec3 sunPos(1.0f * glm::cos(sunAngle), 1.0f * glm::sin(sunAngle), 0.0f);
-    glm::mat4 sunModel;
-    sunModel = glm::translate(sunModel, glm::vec3(-90.0f, -90.0f, 0.0f));
-    sunModel = glm::rotate(sunModel, sunAngle, glm::vec3(0.0f, 0.0f, 1.0f));
-    domeShaders.SetUniform("sunPos",
-                           glm::vec3(sunModel * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)));
+    glm::vec3 sunPos = glm::vec3(sunModel * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    domeShaders.SetUniform("sunPos", sunPos);
     dome.Draw(domeShaders, false);
 
+    spriteShaders.Use();
+    spriteShaders.SetUniform("view", view);
+    spriteShaders.SetUniform("projection", projection);
+    spriteShaders.SetUniform("model", sunModel);
+    sun.Draw(spriteShaders);
+    spriteShaders.SetUniform("model", moonModel);
+    moon.Draw(spriteShaders);
+
+    /*
+    lightShaders.Use();
+
+    lightShaders.SetUniform("view", pinnedView);
+    lightShaders.SetUniform("projection", projection);
+    lightShaders.SetUniform("model", sunModel);
+    lightShaders.SetUniform("lightColor", lightColor);
+
+    glBindVertexArray(lightVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+    */
+
     // draw lamp
+    /*
     lightShaders.Use();
 
     glm::mat4 lightModel = glm::scale(glm::translate(glm::mat4(), light_pos), glm::vec3(0.2f));
@@ -234,6 +286,7 @@ int main() {
     glBindVertexArray(lightVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+    */
 
     glfwSwapBuffers(window);
   }
@@ -257,6 +310,8 @@ void key_callback(GLFWwindow * window, int key, int scancode, int action, int mo
     glPointSize(point_size = (point_size - 1 > 0) ? (point_size - 1) : 1);
   } else if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
     flash_light_on = !flash_light_on;
+  } else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+    camera = defaultCamera;
   } else if (key >= 0 && key < 1024) {
     if (action == GLFW_PRESS)
       key_pressed[key] = true;

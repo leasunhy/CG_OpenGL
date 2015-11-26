@@ -14,8 +14,6 @@ void main()
   vec3 sp = normalize(sunPos);
   float proximity = dot(fp, sp);
   vec4 c = texture(domeColor, vec2((sp.y + 1.0) / 2.0, fp.y));
-  //vec4 c = texture(domeColor, vec2(0.5, 1.0 - fp.y));
   vec4 g = texture(glow, vec2((sp.y + 1.0) / 2.0, proximity));
   color = vec4(c.rgb + g.rgb * g.a / 2.0, c.a);
-  //color = mix(c, g, 0.2);
 }
