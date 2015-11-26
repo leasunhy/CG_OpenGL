@@ -80,11 +80,11 @@ int main()
 	// Setup and compile our shaders
 	Shader shader("Shaders_New/shader.vert", "Shaders_New/shader.frag");
 	Shader simpleDepthShader("Shaders/shadow_mapping_depth.vs", "Shaders/shadow_mapping_depth.frag");
+	Shader lampShader("Shaders/lamp.vs", "Shaders/lamp.frag");
 
 	// Load models
 	Model ourModel("Nanosuit/nanosuit.obj");
-
-
+	Model lightBulb("Nanosuit/geodesic_dome.obj");
 
 	GLfloat planeVertices[] = {
 		// Positions          // Normals         // Texture Coords
@@ -95,6 +95,11 @@ int main()
 		25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
 		25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 25.0f,
 		-25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 25.0f
+	};
+
+	glm::vec3 pointLightPositions[] = {
+		glm::vec3(4.0f, 4.0f, 0.0f),
+		glm::vec3(4.0f, 4.0f, 0.0f)
 	};
 
 	// Setup plane VAO
@@ -160,15 +165,16 @@ int main()
 		glUniform1i(glGetUniformLocation(shader.Program, "material.texture_diffuse1"), 0);
 		glUniform1i(glGetUniformLocation(shader.Program, "shadowMap"), 1);
 		// Change light position over time
-		lightPos.x = sin(glfwGetTime()) * 3.0f;
-		lightPos.z = cos(glfwGetTime()) * 2.0f;
-		lightPos.y = 5.0 + cos(glfwGetTime()) * 1.0f;
+		lightPos.x = sin(glfwGetTime()) * 5.0f;
+		lightPos.z = 2.0f;
+		lightPos.y = cos(glfwGetTime()) * 5.0f;
 
 		// 1. Render depth of scene to texture (from light's perspective)
 		// - Get light projection/view matrix.
 		glm::mat4 lightProjection, lightView;
 		glm::mat4 lightSpaceMatrix;
 		GLfloat near_plane = 1.0f, far_plane = 20.f;
+
 		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 		//lightProjection = glm::perspective(45.0f, (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); // Note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene.
 		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(1.0));
@@ -193,23 +199,31 @@ int main()
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.Use();
-		glm::mat4 projection = glm::perspective(camera.Zoom, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		// Set light uniforms
-		glUniform3fv(glGetUniformLocation(shader.Program, "pointLights.position"), 1, &lightPos[0]);
-
-		//glUniform3f(glGetUniformLocation(shader.Program, "pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
-		
+		glUniform3f(glGetUniformLocation(shader.Program, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
+		// Point light 1
+		glUniform3f(glGetUniformLocation(shader.Program, "pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
 		glUniform3f(glGetUniformLocation(shader.Program, "pointLights[0].ambient"), 0.05f, 0.05f, 0.05f);
 		glUniform3f(glGetUniformLocation(shader.Program, "pointLights[0].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shader.Program, "pointLights[0].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shader.Program, "pointLights[0].constant"), 1.0f);
 		glUniform1f(glGetUniformLocation(shader.Program, "pointLights[0].linear"), 0.009);
 		glUniform1f(glGetUniformLocation(shader.Program, "pointLights[0].quadratic"), 0.0032);
+		// Point light 2
+		glUniform3f(glGetUniformLocation(shader.Program, "pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
+		glUniform3f(glGetUniformLocation(shader.Program, "pointLights[1].ambient"), 0.05f, 0.05f, 0.05f);
+		glUniform3f(glGetUniformLocation(shader.Program, "pointLights[1].diffuse"), 1.0f, 1.0f, 1.0f);
+		glUniform3f(glGetUniformLocation(shader.Program, "pointLights[1].specular"), 1.0f, 1.0f, 1.0f);
+		glUniform1f(glGetUniformLocation(shader.Program, "pointLights[1].constant"), 1.0f);
+		glUniform1f(glGetUniformLocation(shader.Program, "pointLights[1].linear"), 0.009);
+		glUniform1f(glGetUniformLocation(shader.Program, "pointLights[1].quadratic"), 0.0032);
 		
 		/*
+		//SpotLight
 		glUniform3f(glGetUniformLocation(shader.Program, "spotLight.position"), camera.Position.x, camera.Position.y, camera.Position.z);
 		
 		glUniform3f(glGetUniformLocation(shader.Program, "spotLight.direction"), camera.Front.x, camera.Front.y, camera.Front.z);
@@ -228,7 +242,7 @@ int main()
 
 		// Enable/Disable shadows by pressing 'SPACE'
 		glUniform1i(glGetUniformLocation(shader.Program, "shadows"), shadows);
-		glUniform1i(glGetUniformLocation(shader.Program, "pointLightCount"), 1);
+		glUniform1i(glGetUniformLocation(shader.Program, "pointLightCount"), 2);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexture);
 		glActiveTexture(GL_TEXTURE1);
@@ -245,6 +259,40 @@ int main()
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		ourModel.Draw(shader);
 		
+		// Draw the lamps
+
+		lampShader.Use();
+		glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		for (GLuint i = 0; i < 2; i++)
+		{
+			//model = glm::rotate(glm::mat4(), glm::radians);
+			model = glm::mat4();
+			model = glm::translate(model, pointLightPositions[i]);
+			if (i == 1)
+				model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f)); // Downscale lamp object (a bit too large)
+
+			glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+			GLfloat radius = 3.0f;
+
+			GLfloat camX = sin(glfwGetTime()) * 5.0f;
+			GLfloat camZ = 5.0 + cos(glfwGetTime()) * 1.0f;
+			GLfloat camY = cos(glfwGetTime()) * 5.0f;
+
+			glm::vec4 light;
+			if (camZ <= 0.0) 
+				light = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+			else 
+				light = glm::vec4(1.0f);
+				
+			glUniform4f(glGetUniformLocation(lampShader.Program, "light"), light.x, light.y, light.z, light.w);
+			GLint modelLoc = glGetUniformLocation(lampShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+			pointLightPositions[i] = glm::vec3(camX, camY, 2.0f);
+			lightBulb.Draw(lampShader);
+		}
 
 		// Swap the buffers
 		glfwSwapBuffers(window);
@@ -259,16 +307,19 @@ void RenderScene(Shader &shader)
 	// Floor
 	glm::mat4 model;
 	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	glUniform1i(glGetUniformLocation(shader.Program, "isBlack"),(GLfloat)0.0f);
 	glBindVertexArray(planeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+
 	// Cubes
 	model = glm::mat4();
-	model = glm::translate(model, glm::vec3(2.0f, 2.8f, 0.0));
+	model = glm::translate(model, glm::vec3(2.0f, 1.0f, 1.5f));
+	model = glm::rotate(model, (GLfloat)glfwGetTime() * 5.0f, glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 	RenderCube();
 	model = glm::mat4();
-	model = glm::translate(model, glm::vec3(2.5f, 1.5f, 0.0));
+	model = glm::translate(model, glm::vec3(3.5f, 0.0f, 0.0));
 	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 	RenderCube();
 	model = glm::mat4();
@@ -353,6 +404,7 @@ void RenderCube()
 	glBindVertexArray(0);
 }
 
+
 // This function loads a texture from file. Note: texture loading functions like these are usually 
 // managed by a 'Resource Manager' that manages all resources (like textures, models, audio). 
 // For learning purposes we'll just define it as a utility function.
@@ -399,11 +451,6 @@ void Do_Movement()
 		if (!keysPressed[GLFW_KEY_SPACE]) {
 			shadows = !shadows;
 		}
-			
-
-		
-	
-
 }
 
 GLfloat lastX = 400, lastY = 300;

@@ -19,10 +19,10 @@ uniform mat4 lightSpaceMatrix;
 void main()
 {
   gl_Position = projection * view * model * vec4(position, 1.0f);
-  //Normal = normalMatrix * normal;
+
   Normal = transpose(inverse(mat3(model))) * normal;
   FragPos = vec3(model * vec4(position, 1.0f));
-  //TexCoords = vec2(texCoords.x, 1.0 - texCoords.y);
-  TexCoords = texCoords;
+  TexCoords = vec2(texCoords.x, 1.0 - texCoords.y);
+
   FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
 }

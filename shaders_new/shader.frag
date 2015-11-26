@@ -58,6 +58,7 @@ uniform vec3 ViewPos;
 
 uniform bool shadows;
 
+
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -71,13 +72,15 @@ void main()
 
   vec3 result = vec3(0.0);
   result += calcDirLight(dirLight, normal, viewDir);
-  for (int i = 0; i < pointLightCount; ++i)
-    result += calcPointLight(pointLights[i], normal, FragPos, viewDir);
+
+
+  for (int i = 0; i < pointLightCount; ++i){
+	result += calcPointLight(pointLights[i], normal, FragPos, viewDir);	
+  }
+    
   result += calcSpotLight(spotLight, normal, FragPos, viewDir);
 
-
   FragColor = vec4(result * color, 1.0f);
-  //FragColor = vec4(result, 1.0f);
 }
 
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
@@ -98,7 +101,7 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
   // Calculate shadow
   float shadow = shadows ? ShadowCalculation(FragPosLightSpace, light.direction) : 0.0;                      
     shadow = min(shadow, 0.75);
-
+   
   return ambient + (1.0 - shadow) * (diffuse + specular);
 }
 
@@ -126,7 +129,13 @@ vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
   float shadow = shadows ? ShadowCalculation(FragPosLightSpace, light.position) : 0.0;                      
     shadow = min(shadow, 0.75);
 
-  return ambient + (1.0 - shadow) * (diffuse + specular);
+  float dark = 1;
+  float radius = sqrt(light.position.y * light.position.y + light.position.x + light.position.x); 
+  if (light.position.y <= -1.0){
+	dark = max(light.position.x, 0.05f) / radius;
+  }
+   
+  return ambient + (1.0 - shadow) * (diffuse + specular) * dark;
 }
 
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
@@ -152,7 +161,13 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
   float shadow = shadows ? ShadowCalculation(FragPosLightSpace, light.position) : 0.0;                      
     shadow = min(shadow, 0.75);
 
-  return ambient + (1.0 - shadow) * (diffuse + specular);
+  float dark = 1;
+  float radius = sqrt(light.position.y * light.position.y + light.position.x + light.position.x); 
+  if (light.position.y <= -1.0){
+	dark = max(light.position.x, 0.05f) / radius;
+  }
+   
+  return ambient + (1.0 - shadow) * (diffuse + specular) * dark;
 }
 
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightPos)
