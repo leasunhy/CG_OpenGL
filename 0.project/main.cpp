@@ -36,6 +36,7 @@ Camera camera(defaultCamera);
 void do_movement(double delta_time);
 
 bool flash_light_on = false;
+bool enable_stars = true;
 
 std::default_random_engine rand_generator;
 std::uniform_real_distribution<float> rand_rotate_dist(0.0f, 360.0f);
@@ -149,7 +150,7 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  std::vector<glm::mat4> starModels(512);
+  std::vector<glm::mat4> starModels(256);
   for (auto& m : starModels) {
     m = glm::rotate(m, glm::radians(rand_rotate()), glm::vec3(1.0f, 0.0f, 0.0f));
     m = glm::rotate(m, glm::radians(rand_rotate()), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -180,6 +181,25 @@ int main() {
                                 (GLfloat)windowWidth / (GLfloat)windowHeight,
                                 0.01f, 1000.0f);
 
+    // sun
+    float sunAngle = current_frame * 30.0f;
+    glm::mat4 sunModel;
+    // sunModel = glm::translate(sunModel, glm::vec3(0.0f, 0.0f, -0.9f));
+    sunModel = glm::rotate(sunModel, glm::radians(sunAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    sunModel = glm::translate(sunModel, glm::vec3(3.5f, 0.0f, 0.0f));
+    //sunModel = glm::scale(sunModel, glm::vec3(1.0f, 1.0f, 1.0f));
+    //sunModel = glm::translate(sunModel, glm::vec3(2.6f, 2.6f, 0.0f));
+    //sunModel = glm::scale(sunModel, glm::vec3(0.7f, 0.7f, 0.7f));
+    float moonAngle = sunAngle + 180.0f;
+    glm::mat4 moonModel;
+    // moonModel = glm::translate(moonModel, glm::vec3(0.0f, 0.0f, -0.9f));
+    moonModel = glm::rotate(moonModel, glm::radians(moonAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    moonModel = glm::translate(moonModel, glm::vec3(3.5f, 0.0f, 0.0f));
+    //moonModel = glm::scale(moonModel, glm::vec3(1.0f, 1.0f, 1.0f));
+    //moonModel = glm::translate(moonModel, glm::vec3(2.6f, 2.6f, 0.0f));
+    //moonModel = glm::scale(moonModel, glm::vec3(0.7f, 0.7f, 0.7f));
+    glm::vec3 sunPos = glm::vec3(sunModel * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
 
     glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
     lightColor.r = sin(current_frame * 2.0f);
@@ -187,7 +207,7 @@ int main() {
     lightColor.b = sin(current_frame * 1.3f);
 
     // directional light
-    DirLight dirLight(glm::vec3(-0.2f, -1.0f, -0.3f));
+    DirLight dirLight(-sunPos);
 
     // point light
     PointLight pointLight(light_pos, lightColor * 0.5f);
@@ -221,44 +241,25 @@ int main() {
     colorShaders.SetUniform("material.shininess", 16.0f);
 
     // make the dome and landscape pinned
-    glm::mat4 pinnedView = glm::lookAt(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f) + camera.Front,
+    glm::mat4 pinnedView = glm::lookAt(glm::vec3(0.0f, 1.0f, 0.0f),
+                                       glm::vec3(0.0f, 1.0f, 0.0f) + camera.Front,
                                        glm::vec3(0.0f, 1.0f, 0.0f));
 
-    float sunAngle = current_frame * -30.0f;
-    glm::mat4 sunModel;
-    // sunModel = glm::translate(sunModel, glm::vec3(0.0f, 0.0f, -0.5f));
-    sunModel = glm::rotate(sunModel, glm::radians(sunAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-    sunModel = glm::translate(sunModel, glm::vec3(3.5f, 0.0f, 0.0f));
-    //sunModel = glm::scale(sunModel, glm::vec3(1.0f, 1.0f, 1.0f));
-    //sunModel = glm::translate(sunModel, glm::vec3(2.6f, 2.6f, 0.0f));
-    //sunModel = glm::scale(sunModel, glm::vec3(0.7f, 0.7f, 0.7f));
-    //sunModel = glm::rotate(sunModel, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    float moonAngle = sunAngle + 180.0f;
-    glm::mat4 moonModel;
-    // moonModel = glm::translate(moonModel, glm::vec3(0.0f, 0.0f, -0.5f));
-    moonModel = glm::rotate(moonModel, glm::radians(moonAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-    moonModel = glm::translate(moonModel, glm::vec3(3.5f, 0.0f, 0.0f));
-    //moonModel = glm::scale(moonModel, glm::vec3(1.0f, 1.0f, 1.0f));
-    //moonModel = glm::translate(moonModel, glm::vec3(2.6f, 2.6f, 0.0f));
-    //moonModel = glm::scale(moonModel, glm::vec3(0.7f, 0.7f, 0.7f));
-    //moonModel = glm::rotate(moonModel, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::vec3 sunPos = glm::vec3(sunModel * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-    // stars
-    starShaders.Use();
-    starShaders.SetUniform("view", view);
-    starShaders.SetUniform("projection", projection);
-    starShaders.SetUniform("groundBases[0]", 1.0f, 0.0f, 0.0f);
-    starShaders.SetUniform("groundBases[1]", 0.0f, 0.0f, 1.0f);
-    starShaders.SetUniform("groundUp", 0.0f, 1.0f, 0.0f);
-    starShaders.SetUniform("sunPos", sunPos);
-    for (const auto& m : starModels) {
-      glm::mat4 model = glm::rotate(glm::mat4(), glm::radians(sunAngle), glm::vec3(0.0f, 0.0f, 1.0f)) * m;
-      starShaders.SetUniform("model", model);
-      star.Draw(starShaders);
+    if (enable_stars) {
+      // stars
+      starShaders.Use();
+      starShaders.SetUniform("view", view);
+      starShaders.SetUniform("projection", projection);
+      starShaders.SetUniform("groundBases[0]", 1.0f, 0.0f, 0.0f);
+      starShaders.SetUniform("groundBases[1]", 0.0f, 0.0f, 1.0f);
+      starShaders.SetUniform("groundUp", 0.0f, 1.0f, 0.0f);
+      starShaders.SetUniform("sunPos", sunPos);
+      for (const auto& m : starModels) {
+        glm::mat4 model = glm::rotate(glm::mat4(), glm::radians(sunAngle), glm::vec3(0.0f, 0.0f, 1.0f)) * m;
+        starShaders.SetUniform("model", model);
+        star.Draw(starShaders);
+      }
     }
-    // starShaders.SetUniform("model", starModels[0]);
-    // star.Draw(starShaders);
 
     colorShaders.Use();
     glm::mat4 lmodel;
@@ -376,6 +377,8 @@ void key_callback(GLFWwindow * window, int key, int scancode, int action, int mo
     flash_light_on = !flash_light_on;
   } else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
     camera = defaultCamera;
+  } else if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+    enable_stars = !enable_stars;
   } else if (key >= 0 && key < 1024) {
     if (action == GLFW_PRESS)
       key_pressed[key] = true;
