@@ -31,7 +31,7 @@ void key_callback(GLFWwindow * window, int key, int scancode, int action, int mo
 void cursor_callback(GLFWwindow * window, double xpos, double ypos);
 void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
-Camera defaultCamera(glm::vec3(0.0f, 0.5f, 2.0f));
+Camera defaultCamera(glm::vec3(0.0f, 0.35f, 2.0f));
 Camera camera(defaultCamera);
 void do_movement(double delta_time);
 
@@ -127,7 +127,8 @@ int main() {
   glBindVertexArray(0);
 
   Shader shaders("data/shaders/shader.vert", "data/shaders/shader.frag");
-  Shader colorShaders("data/shaders/shaderColor.vert", "data/shaders/shaderColor.frag");
+  Shader colorShaders("data/shaders/shaderColorUniform.vert",
+                      "data/shaders/shaderColorUniform.frag");
   Shader domeShaders("data/shaders/dome.vert", "data/shaders/dome.frag");
   Shader lightShaders("data/shaders/lightShader.vert", "data/shaders/lightShader.frag");
   Shader spriteShaders("data/shaders/spriteShader.vert", "data/shaders/spriteShader.frag");
@@ -238,7 +239,7 @@ int main() {
     pointLight.SetUniforms(colorShaders, "pointLights[0]");
     colorShaders.SetUniform("pointLightCount", 0);
     spotLight.SetUniforms(colorShaders, "spotLight");
-    colorShaders.SetUniform("material.shininess", 16.0f);
+    colorShaders.SetUniform("material.shininess", 1.8f);
 
     // make the dome and landscape pinned
     glm::mat4 pinnedView = glm::lookAt(glm::vec3(0.0f, 1.0f, 0.0f),
@@ -270,6 +271,7 @@ int main() {
     colorShaders.SetUniform("view", view);
     colorShaders.SetUniform("model", lmodel);
     colorShaders.SetUniform("normalMatrix", normalMatrix);
+    colorShaders.SetUniform("Color", glm::vec4(0.93f, 0.79f, 0.69f, 1.0f));
     landscape.Draw(colorShaders, false);
 
     domeShaders.Use();
