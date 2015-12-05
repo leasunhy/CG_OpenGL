@@ -40,4 +40,57 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\data\shaders\dome.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\dome.vert">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\lamp.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\lamp.vs">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\lightShader.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\lightShader.vert">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\shaderColor.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\shaderColor.vert">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\shaderColorUniform.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\shaderColorUniform.vert">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\shadow_mapping_depth.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\shadow_mapping_depth.vs">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\spriteShader.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\spriteShader.vert">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\stars.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\shader.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\data\shaders\shader.vert">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
 </Project>

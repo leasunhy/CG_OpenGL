@@ -1,23 +1,23 @@
-﻿生成启动时间为 2015/12/3 12:28:47。
+﻿生成启动时间为 2015/12/6 1:47:10。
      1>项目“G:\Github\CG_OpenGL\0.project\project\VS14\VS14.vcxproj”在节点 2 上(Build 个目标)。
      1>ClCompile:
-         D:\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\..\common\texture.cpp ..\..\main.cpp
+         D:\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\main.cpp
          main.cpp
-     1>g:\github\cg_opengl\0.project\main.cpp(177): warning C4244: “初始化”: 从“double”转换到“GLfloat”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(186): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(206): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(207): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(208): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(379): warning C4244: “参数”: 从“int”转换到“GLfloat”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(381): warning C4244: “参数”: 从“int”转换到“GLfloat”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(398): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(400): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(402): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(404): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(420): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
-     1>g:\github\cg_opengl\0.project\main.cpp(424): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
-         texture.cpp
-         正在生成代码...
+     1>g:\github\cg_opengl\0.project\main.cpp(250): warning C4244: “初始化”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(262): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(282): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(283): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(284): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(500): warning C4305: “参数”: 从“double”到“GLfloat”截断
+     1>g:\github\cg_opengl\0.project\main.cpp(501): warning C4305: “参数”: 从“double”到“GLfloat”截断
+     1>g:\github\cg_opengl\0.project\main.cpp(543): warning C4244: “参数”: 从“int”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(545): warning C4244: “参数”: 从“int”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(562): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(564): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(566): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(568): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(584): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\0.project\main.cpp(588): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
        Link:
          D:\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"G:\Github\CG_OpenGL\0.project\project\VS14\Debug\VS14.exe" /INCREMENTAL /NOLOGO opengl32.lib DevIL.lib SOIL.lib assimpd.lib glfw3.lib glew32s.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"G:\Github\CG_OpenGL\0.project\project\VS14\Debug\VS14.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"G:\Github\CG_OpenGL\0.project\project\VS14\Debug\VS14.lib" /MACHINE:X86 Debug\camera.obj
          Debug\light.obj
@@ -27,46 +27,9 @@
          Debug\sprite.obj
          Debug\texture.obj
          Debug\main.obj
-     1>LINK : warning LNK4098: 默认库“MSVCRT”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
-     1>LINK : warning LNK4098: 默认库“LIBCMT”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
-     1>mesh.obj : warning LNK4049: 已导入本地定义的符号 ___glewActiveTexture
-     1>mesh.obj : warning LNK4049: 已导入本地定义的符号 ___glewBindBuffer
-     1>sprite.obj : warning LNK4049: 已导入本地定义的符号 ___glewBindBuffer
-     1>mesh.obj : warning LNK4049: 已导入本地定义的符号 ___glewBufferData
-     1>sprite.obj : warning LNK4049: 已导入本地定义的符号 ___glewBufferData
-     1>mesh.obj : warning LNK4049: 已导入本地定义的符号 ___glewGenBuffers
-     1>sprite.obj : warning LNK4049: 已导入本地定义的符号 ___glewGenBuffers
-     1>mesh.obj : warning LNK4049: 已导入本地定义的符号 ___glewEnableVertexAttribArray
-     1>sprite.obj : warning LNK4049: 已导入本地定义的符号 ___glewEnableVertexAttribArray
-     1>mesh.obj : warning LNK4049: 已导入本地定义的符号 ___glewVertexAttribPointer
-     1>sprite.obj : warning LNK4049: 已导入本地定义的符号 ___glewVertexAttribPointer
-     1>mesh.obj : warning LNK4049: 已导入本地定义的符号 ___glewBindVertexArray
-     1>sprite.obj : warning LNK4049: 已导入本地定义的符号 ___glewBindVertexArray
-     1>mesh.obj : warning LNK4049: 已导入本地定义的符号 ___glewGenVertexArrays
-     1>sprite.obj : warning LNK4049: 已导入本地定义的符号 ___glewGenVertexArrays
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewAttachShader
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewCompileShader
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewCreateProgram
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewCreateShader
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewDeleteProgram
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewDeleteShader
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewGetShaderInfoLog
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewGetShaderiv
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewGetUniformLocation
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewLinkProgram
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewShaderSource
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewUniform1f
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewUniform1i
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewUniform3f
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewUniform4f
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewUniformMatrix3fv
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewUniformMatrix4fv
-     1>shader.obj : warning LNK4049: 已导入本地定义的符号 ___glewUseProgram
-     1>texture.obj : warning LNK4049: 已导入本地定义的符号 ___glewGenerateMipmap
-     1>glew32s.lib(glew.obj) : warning LNK4099: 未找到 PDB“vc120.pdb”(使用“glew32s.lib(glew.obj)”或在“G:\Github\CG_OpenGL\0.project\project\VS14\Debug\vc120.pdb”中寻找)；正在链接对象，如同没有调试信息一样
          VS14.vcxproj -> G:\Github\CG_OpenGL\0.project\project\VS14\Debug\VS14.exe
      1>已完成生成项目“G:\Github\CG_OpenGL\0.project\project\VS14\VS14.vcxproj”(Build 个目标)的操作。
 
 已成功生成。
 
-已用时间 00:00:05.46
+已用时间 00:00:02.32
