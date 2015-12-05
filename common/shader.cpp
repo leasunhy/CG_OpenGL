@@ -80,8 +80,8 @@ void Shader::Use() {
 
 GLint Shader::Uniform(const std::string& name) {
   GLint res = glGetUniformLocation(this->Program, name.c_str());
-  if (res == -1)
-    std::cerr << "Error: No such uniform: " << name << std::endl;
+  //if (res == -1)
+  //  std::cerr << "Error: No such uniform: " << name << std::endl;
   return res;
 }
 

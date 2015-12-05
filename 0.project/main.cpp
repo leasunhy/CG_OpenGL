@@ -37,12 +37,19 @@ void do_movement(double delta_time);
 
 bool flash_light_on = false;
 bool enable_stars = true;
+// Options
+GLboolean shadows = true;
 
 std::default_random_engine rand_generator;
 std::uniform_real_distribution<float> rand_rotate_dist(0.0f, 360.0f);
 std::uniform_real_distribution<float> rand_scale_dist(0.5f, 1.2f);
 auto rand_rotate = std::bind(rand_rotate_dist, rand_generator);
 auto rand_scale = std::bind(rand_scale_dist, rand_generator);
+
+//xzh
+void RenderScene(Shader &shader);
+void RenderCube();
+GLuint planeVAO;
 
 int main() {
   GLFWwindow * window = initWindow(windowWidth, windowHeight);
@@ -126,6 +133,69 @@ int main() {
 
   glBindVertexArray(0);
 
+  //plane
+  Shader simpleDepthShader("data/shaders/shadow_mapping_depth.vs", "data/shaders/shadow_mapping_depth.frag");
+  
+  Model ourModel("data/Obj/nanosuit.obj");
+
+  GLfloat planeVertices[] = {
+	  // Positions          // Normals         // Texture Coords
+	  2.0f, 0.0f, 2.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
+	  -2.0f, 0.0f, -2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
+	  -2.0f, 0.0f, 2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+
+	  2.0f, 0.0f, 2.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
+	  2.0f, 0.0f, -2.0f, 0.0f, 1.0f, 0.0f, 2.0f, 2.0f,
+	  -2.0f, 0.0f, -2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f
+  };
+
+  // Setup plane VAO xzhs
+  GLuint planeVBO;
+  GLuint woodTexture;
+  GLuint rockTexture;
+  glGenVertexArrays(1, &planeVAO);
+  glGenBuffers(1, &planeVBO);
+  glBindVertexArray(planeVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+  glBindVertexArray(0);
+
+  // Load textures
+  woodTexture = load_texture("data/textures/wood.png");
+  rockTexture = load_texture("data/textures/rock.jpg");
+
+  // Configure depth map FBO
+  const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+  GLuint depthMapFBO;
+  glGenFramebuffers(1, &depthMapFBO);
+  // - Create depth texture
+  GLuint depthMap;
+  glGenTextures(1, &depthMap);
+  glBindTexture(GL_TEXTURE_2D, depthMap);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+  //xzhe
+
   Shader shaders("data/shaders/shader.vert", "data/shaders/shader.frag");
   Shader colorShaders("data/shaders/shaderColorUniform.vert",
                       "data/shaders/shaderColorUniform.frag");
@@ -160,7 +230,6 @@ int main() {
     m = glm::rotate(m, glm::radians(rand_rotate()), glm::vec3(1.0f, 0.0f, 0.0f));
     m = glm::rotate(m, glm::radians(rand_rotate()), glm::vec3(0.0f, 1.0f, 0.0f));
   }
-
   double last_frame = glfwGetTime();
   while (!glfwWindowShouldClose(window)) {
     double current_frame = glfwGetTime();
@@ -171,16 +240,23 @@ int main() {
 
     do_movement(delta_time);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glViewport(0, 0, windowWidth, windowHeight);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    GLfloat light_pos_angle = glm::radians(60.0f * current_frame);
-    glm::vec3 light_pos(1.2f + sin(light_pos_angle), 0.0f, 2.0f + cos(light_pos_angle));
 
-    glm::mat4 view = camera.GetViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
-                                (GLfloat)windowWidth / (GLfloat)windowHeight,
-                                0.01f, 1000.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+	glm::mat4 view = camera.GetViewMatrix();
+	GLfloat light_pos_angle = glm::radians(60.0f * current_frame);
+	glm::vec3 light_pos(1.2f + sin(light_pos_angle), 0.0f, 2.0f + cos(light_pos_angle));
+
+	//glClear(GL_DEPTH_BUFFER_BIT);
+    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //GLfloat light_pos_angle = glm::radians(60.0f * current_frame);
+    //glm::vec3 light_pos(1.2f + sin(light_pos_angle), 0.0f, 2.0f + cos(light_pos_angle));
+
 
     // sun
     float sunAngle = current_frame * 30.0f;
@@ -226,10 +302,23 @@ int main() {
     shaders.SetUniform("pointLightCount", 0);
     spotLight.SetUniforms(shaders, "spotLight");
     shaders.SetUniform("material.shininess", 16.0f);
-    glm::mat4 nmodel = glm::translate(glm::mat4(), glm::vec3(-1.2f, -1.0f, -2.0f));;
+
+    glm::mat4 nmodel = glm::translate(glm::mat4(), glm::vec3(-1.2f, 0.5f, -2.0f));
+	nmodel = glm::scale(nmodel, glm::vec3(0.1f, 0.1f, 0.1f));
     shaders.SetUniform("model", nmodel);
 
     //nanosuit.Draw(shaders);
+	
+	/*
+	ourModel.Draw(shaders);
+	glUniform1i(glGetUniformLocation(shaders.Program, "shadows"), shadows);
+	glUniform1i(glGetUniformLocation(shaders.Program, "pointLightCount"), 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, woodTexture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	RenderScene(shaders);
+	*/
 
     colorShaders.Use();
     colorShaders.SetUniform("view", view);
@@ -279,8 +368,12 @@ int main() {
     domeShaders.SetUniform("projection", projection);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, domeColor);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     domeShaders.SetUniform("domeColor", 0);
     glActiveTexture(GL_TEXTURE1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     glBindTexture(GL_TEXTURE_2D, domeGlow);
     domeShaders.SetUniform("glow", 1);
     glActiveTexture(GL_TEXTURE0);
@@ -355,6 +448,80 @@ int main() {
     glBindVertexArray(0);
     */
 
+	//xzhs
+	// Set texture samples
+	shaders.Use();
+	glUniform1i(glGetUniformLocation(shaders.Program, "material.texture_diffuse1"), 0);
+	glUniform1i(glGetUniformLocation(shaders.Program, "shadowMap"), 1);
+
+	// 1. Render depth of scene to texture (from light's perspective)
+	// - Get light projection/view matrix.
+	//光源空间的变换
+	glm::mat4 lightProjection, lightView;
+	glm::mat4 lightSpaceMatrix;
+	GLfloat near_plane = 1.0f, far_plane = 7.5f;
+
+	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	//lightProjection = glm::perspective(45.0f, (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); // Note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene.
+	lightView = glm::lookAt(sunPos, glm::vec3(0.0f), glm::vec3(1.0));
+	lightSpaceMatrix = lightProjection * lightView;
+	// - now render scene from light's point of view
+	//首先渲染深度贴图
+	simpleDepthShader.Use();
+	glUniformMatrix4fv(glGetUniformLocation(simpleDepthShader.Program, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	RenderScene(simpleDepthShader);
+
+	glm::mat4 model;
+	model = glm::translate(model, glm::vec3(0.1f, 0.3f, 1.0f)); // Translate it down a bit so it's at the center of the scene
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+	glUniformMatrix4fv(glGetUniformLocation(simpleDepthShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	ourModel.Draw(simpleDepthShader);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// 2. Render scene as normal 
+	glViewport(0, 0, windowWidth, windowHeight);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	shaders.Use();
+	glUniformMatrix4fv(glGetUniformLocation(shaders.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(shaders.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+	// Set light uniforms
+	glUniform3f(glGetUniformLocation(shaders.Program, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
+	//设置点光源产生阴影
+	// Point light 1
+	glUniform3f(glGetUniformLocation(shaders.Program, "pointLights[0].position"), sunPos.x, sunPos.y, sunPos.z);
+	glUniform3f(glGetUniformLocation(shaders.Program, "pointLights[0].ambient"), 0.02f, 0.02f, 0.02f);
+	glUniform3f(glGetUniformLocation(shaders.Program, "pointLights[0].diffuse"), 1.0f, 1.0f, 1.0f);
+	glUniform3f(glGetUniformLocation(shaders.Program, "pointLights[0].specular"), 0.5f, 0.5f, 0.5f);
+	glUniform1f(glGetUniformLocation(shaders.Program, "pointLights[0].constant"), 1.0f);
+	glUniform1f(glGetUniformLocation(shaders.Program, "pointLights[0].linear"), 0.009);
+	glUniform1f(glGetUniformLocation(shaders.Program, "pointLights[0].quadratic"), 0.0032);
+	
+	glUniform3fv(glGetUniformLocation(shaders.Program, "ViewPos"), 1, &camera.Position[0]);
+	glUniformMatrix4fv(glGetUniformLocation(shaders.Program, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+
+	// Enable/Disable shadows by pressing 'SPACE'
+	glUniform1i(glGetUniformLocation(shaders.Program, "shadows"), shadows);
+	glUniform1i(glGetUniformLocation(shaders.Program, "pointLightCount"), 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, woodTexture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	RenderScene(shaders);
+
+
+	glActiveTexture(GL_TEXTURE15);
+	glBindTexture(GL_TEXTURE_2D, woodTexture);
+	glUniform1i(glGetUniformLocation(shaders.Program, "material.texture_diffuse1"), 1);
+	glActiveTexture(GL_TEXTURE16);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glUniform1i(glGetUniformLocation(shaders.Program, "shadowMap"), 16);
+	glUniformMatrix4fv(glGetUniformLocation(shaders.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	ourModel.Draw(shaders);
+	//xzhe
+
     glfwSwapBuffers(window);
   }
 
@@ -420,3 +587,106 @@ void scroll_callback(GLFWwindow * window, double xoffset, double yoffset) {
   camera.DoMouseScroll(yoffset);
 }
 
+//xzhs
+void RenderScene(Shader &shader)
+{
+	// Floor
+	glm::mat4 model = glm::mat4();
+	model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.3f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+	shader.SetUniform("model", model);
+	glBindVertexArray(planeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	// Cubes
+	model = glm::mat4();
+	model = glm::translate(model, glm::vec3(0.2f, 0.4f, 0.5f));
+	model = glm::rotate(model, (GLfloat)glfwGetTime() * 5.0f, glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	RenderCube();
+	model = glm::mat4();
+	model = glm::translate(model, glm::vec3(0.5f, 0.4f, -0.5));
+	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	RenderCube();
+	model = glm::mat4();
+	model = glm::translate(model, glm::vec3(0.3f, 0.5f, 0.5f));
+	model = glm::rotate(model, 60.0f, glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.5));
+	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	RenderCube();
+}
+
+// RenderCube() Renders a 1x1 3D cube in NDC.
+GLuint cubeVAO = 0;
+GLuint cubeVBO = 0;
+void RenderCube()
+{
+	// Initialize (if necessary)
+	if (cubeVAO == 0)
+	{
+		GLfloat vertices[] = {
+			// Back face
+			-0.05f, -0.05f, -0.05f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // Bottom-left
+			0.05f, 0.05f, -0.05f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			0.05f, -0.05f, -0.05f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+			0.05f, 0.05f, -0.05f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,  // top-right
+			-0.05f, -0.05f, -0.05f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,  // bottom-left
+			-0.05f, 0.05f, -0.05f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,// top-left
+															  // Front face
+			-0.05f, -0.05f, 0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
+			0.05f, -0.05f, 0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,  // bottom-right
+			0.05f, 0.05f, 0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,  // top-right
+			0.05f, 0.05f, 0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
+			-0.05f, 0.05f, 0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,  // top-left
+			-0.05f, -0.05f, 0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom-left
+															   // Left face
+			-0.05f, 0.05f, 0.05f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
+			-0.05f, 0.05f, -0.05f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-left
+			-0.05f, -0.05f, -0.05f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // bottom-left
+			-0.05f, -0.05f, -0.05f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+			-0.05f, -0.05f, 0.05f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // bottom-right
+			-0.05f, 0.05f, 0.05f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
+															  // Right face
+			0.05f, 0.05f, 0.05f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
+			0.05f, -0.05f, -0.05f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
+			0.05f, 0.05f, -0.05f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-right         
+			0.05f, -0.05f, -0.05f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // bottom-right
+			0.05f, 0.05f, 0.05f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  // top-left
+			0.05f, -0.05f, 0.05f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-left     
+															 // Bottom face
+			-0.05f, -0.05f, -0.05f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
+			0.05f, -0.05f, -0.05f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-left
+			0.05f, -0.05f, 0.05f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,// bottom-left
+			0.05f, -0.05f, 0.05f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
+			-0.05f, -0.05f, 0.05f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // bottom-right
+			-0.05f, -0.05f, -0.05f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
+																// Top face
+			-0.05f, 0.05f, -0.05f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,// top-left
+			0.05f, 0.05f, 0.05f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
+			0.05f, 0.05f, -0.05f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // top-right     
+			0.05f, 0.05f, 0.05f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
+			-0.05f, 0.05f, -0.05f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,// top-left
+			-0.05f, 0.05f, 0.05f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f // bottom-left        
+		};
+		glGenVertexArrays(1, &cubeVAO);
+		glGenBuffers(1, &cubeVBO);
+		// Fill buffer
+		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		// Link vertex attributes
+		glBindVertexArray(cubeVAO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	// Render Cube
+	glBindVertexArray(cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+}
+//xzhe
