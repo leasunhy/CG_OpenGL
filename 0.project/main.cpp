@@ -279,8 +279,12 @@ int main() {
     domeShaders.SetUniform("projection", projection);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, domeColor);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     domeShaders.SetUniform("domeColor", 0);
     glActiveTexture(GL_TEXTURE1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     glBindTexture(GL_TEXTURE_2D, domeGlow);
     domeShaders.SetUniform("glow", 1);
     glActiveTexture(GL_TEXTURE0);

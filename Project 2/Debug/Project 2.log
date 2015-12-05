@@ -1,0 +1,31 @@
+﻿生成启动时间为 2015/12/5 16:42:41。
+     1>项目“G:\Github\CG_OpenGL\Project 2\Project 2.vcxproj”在节点 2 上(Build 个目标)。
+     1>ClCompile:
+         D:\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt project2.cpp
+         project2.cpp
+     1>g:\github\cg_opengl\project 2\others\shader.h(12): warning C4067: 预处理器指令后有意外标记 - 应输入换行符
+     1>g:\github\cg_opengl\project 2\project2.cpp(156): warning C4244: “初始化”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(169): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(171): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(215): warning C4305: “参数”: 从“double”到“GLfloat”截断
+     1>g:\github\cg_opengl\project 2\project2.cpp(216): warning C4305: “参数”: 从“double”到“GLfloat”截断
+     1>g:\github\cg_opengl\project 2\project2.cpp(223): warning C4305: “参数”: 从“double”到“GLfloat”截断
+     1>g:\github\cg_opengl\project 2\project2.cpp(224): warning C4305: “参数”: 从“double”到“GLfloat”截断
+     1>g:\github\cg_opengl\project 2\project2.cpp(266): warning C4244: “初始化”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(268): warning C4244: “初始化”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(492): warning C4244: “=”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(493): warning C4244: “=”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(497): warning C4244: “初始化”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(498): warning C4244: “初始化”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(500): warning C4244: “=”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(501): warning C4244: “=”: 从“double”转换到“GLfloat”，可能丢失数据
+     1>g:\github\cg_opengl\project 2\project2.cpp(508): warning C4244: “参数”: 从“double”转换到“GLfloat”，可能丢失数据
+       Link:
+         D:\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"G:\Github\CG_OpenGL\Project 2\Debug\Project 2.exe" /INCREMENTAL /NOLOGO glfw3.lib opengl32.lib glew32s.lib assimpd.lib SOIL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"G:\Github\CG_OpenGL\Project 2\Debug\Project 2.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"G:\Github\CG_OpenGL\Project 2\Debug\Project 2.lib" /MACHINE:X86 Debug\shader.obj
+         Debug\project2.obj
+         Project 2.vcxproj -> G:\Github\CG_OpenGL\Project 2\Debug\Project 2.exe
+     1>已完成生成项目“G:\Github\CG_OpenGL\Project 2\Project 2.vcxproj”(Build 个目标)的操作。
+
+已成功生成。
+
+已用时间 00:00:02.22
