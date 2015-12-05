@@ -1,6 +1,6 @@
 CXX := g++
 CXXFLAGS := $(CFLAGS) -Wall -std=c++11 -I..  -I/usr/include/assimp
-LIBS := $(LIBS) -lglfw -lGLEW -lGLU -lGL -lglut -lassimp -lIL
+LIBS := $(LIBS) -lglfw -lGLEW -lGLU -lGL -lglut -lassimp -lIL -lSOIL
 OBJS := ../common/shader.o ../common/camera.o ../common/model.o\
 		../common/mesh.o ../common/light.o ../common/texture.o\
 		../common/sprite.o

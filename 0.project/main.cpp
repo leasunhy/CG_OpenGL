@@ -136,7 +136,7 @@ int main() {
   //plane
   Shader simpleDepthShader("data/shaders/shadow_mapping_depth.vs", "data/shaders/shadow_mapping_depth.frag");
   
-  Model ourModel("data/Obj/nanosuit.obj");
+  Model ourModel("data/models/nanosuit/nanosuit.obj");
 
   GLfloat planeVertices[] = {
 	  // Positions          // Normals         // Texture Coords
