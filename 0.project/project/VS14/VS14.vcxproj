@@ -136,6 +136,25 @@
     <ClCompile Include="..\..\..\common\texture.cpp" />
     <ClCompile Include="..\..\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\data\shaders\dome.frag" />
+    <None Include="..\..\data\shaders\dome.vert" />
+    <None Include="..\..\data\shaders\lamp.frag" />
+    <None Include="..\..\data\shaders\lamp.vs" />
+    <None Include="..\..\data\shaders\lightShader.frag" />
+    <None Include="..\..\data\shaders\lightShader.vert" />
+    <None Include="..\..\data\shaders\shader.frag" />
+    <None Include="..\..\data\shaders\shader.vert" />
+    <None Include="..\..\data\shaders\shaderColor.frag" />
+    <None Include="..\..\data\shaders\shaderColor.vert" />
+    <None Include="..\..\data\shaders\shaderColorUniform.frag" />
+    <None Include="..\..\data\shaders\shaderColorUniform.vert" />
+    <None Include="..\..\data\shaders\shadow_mapping_depth.frag" />
+    <None Include="..\..\data\shaders\shadow_mapping_depth.vs" />
+    <None Include="..\..\data\shaders\spriteShader.frag" />
+    <None Include="..\..\data\shaders\spriteShader.vert" />
+    <None Include="..\..\data\shaders\stars.frag" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
