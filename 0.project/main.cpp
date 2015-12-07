@@ -51,6 +51,8 @@ void RenderCube();
 GLuint planeVAO;
 
 int main() {
+  // msaa
+  glfwWindowHint(GLFW_SAMPLES, 4);
   GLFWwindow * window = initWindow(windowWidth, windowHeight);
   if (!window) {
     glfwTerminate();
@@ -153,6 +155,9 @@ int main() {
   // enable blending!
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  // enable msaa(multisample anti-aliasing)
+  glEnable(GL_MULTISAMPLE);
 
   std::vector<glm::mat4> starModels(256);
   for (auto& m : starModels) {
