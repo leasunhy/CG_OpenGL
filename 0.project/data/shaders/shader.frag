@@ -56,9 +56,6 @@ uniform sampler2D shadowMap;
 uniform Material material;
 uniform vec3 ViewPos;
 
-uniform bool shadows;
-
-
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -99,7 +96,7 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
   vec3 specular = light.specular * (spec * vec3(texture(material.texture_specular1, TexCoords)));
   
   // Calculate shadow
-  float shadow = shadows ? ShadowCalculation(FragPosLightSpace, light.direction) : 0.0;                      
+  float shadow = ShadowCalculation(FragPosLightSpace, light.direction);
     shadow = min(shadow, 0.75);
    
   return ambient + (1.0 - shadow) * (diffuse + specular);
@@ -126,7 +123,7 @@ vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
                              light.quadratic * dist * dist);
 
   // Calculate shadow
-  float shadow = shadows ? ShadowCalculation(FragPosLightSpace, light.position) : 0.0;                      
+  float shadow = ShadowCalculation(FragPosLightSpace, light.position);
     shadow = min(shadow, 0.75);
 
   float dark = 1;
@@ -158,7 +155,7 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
   float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
   
   // Calculate shadow
-  float shadow = shadows ? ShadowCalculation(FragPosLightSpace, light.position) : 0.0;                      
+  float shadow = ShadowCalculation(FragPosLightSpace, light.position);
     shadow = min(shadow, 0.75);
    
   return ambient + (1.0 - shadow) * (diffuse + specular);
