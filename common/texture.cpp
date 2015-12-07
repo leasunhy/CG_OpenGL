@@ -1,6 +1,6 @@
 #include <iostream>
 #include <IL/il.h>
-#include <SOIL/SOIL.h>
+//#include <SOIL/SOIL.h>
 #include <GL/glew.h>
 #include "common/texture.h"
 
@@ -12,7 +12,7 @@ void init_texture_loading() {
   ilInit();
 }
 
-GLuint load_texture(const std::string& filename, GLenum target) {
+GLuint load_texture(const std::string& filename, GLenum wrap_s, GLenum wrap_t) {
   int width, height;
   std::cout << "loading texture: " << filename << std::endl;
   //unsigned char * data = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGBA);
@@ -32,21 +32,20 @@ GLuint load_texture(const std::string& filename, GLenum target) {
 
   GLuint id;
   glGenTextures(1, &id);
-  glBindTexture(target, id);
-  glTexImage2D(target, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
+  glBindTexture(GL_TEXTURE_2D, id);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
   // sets how opengl handles out-of-range texcoords
-  glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-  glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-  glGenerateMipmap(target);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
+  glGenerateMipmap(GL_TEXTURE_2D);
 
   //SOIL_free_image_data(data);
 
   ilDeleteImages(1, &ihandle);
   delete [] data;
 
-  glBindTexture(target, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
   return id;
 }
 
