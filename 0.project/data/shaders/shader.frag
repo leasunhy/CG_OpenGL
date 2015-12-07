@@ -63,21 +63,18 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightPos);
 
 void main()
 {
-  vec3 color = texture(material.texture_diffuse1, TexCoords).rgb;
   vec3 normal = normalize(Normal);
   vec3 viewDir = normalize(ViewPos - FragPos);
 
   vec3 result = vec3(0.0);
   result += calcDirLight(dirLight, normal, viewDir);
 
+  for (int i = 0; i < pointLightCount; ++i)
+	result += calcPointLight(pointLights[i], normal, FragPos, viewDir);
 
-  for (int i = 0; i < pointLightCount; ++i){
-	result += calcPointLight(pointLights[i], normal, FragPos, viewDir);	
-  }
-    
   result += calcSpotLight(spotLight, normal, FragPos, viewDir);
 
-  FragColor = vec4(result * color, 1.0f);
+  FragColor = vec4(result, 1.0f);
 }
 
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
@@ -94,11 +91,10 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
   vec3 reflectDir = reflect(-lightDir, normal);
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
   vec3 specular = light.specular * (spec * vec3(texture(material.texture_specular1, TexCoords)));
-  
+
   // Calculate shadow
   float shadow = ShadowCalculation(FragPosLightSpace, light.direction);
-    shadow = min(shadow, 0.75);
-   
+
   return ambient + (1.0 - shadow) * (diffuse + specular);
 }
 
@@ -124,15 +120,15 @@ vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 
   // Calculate shadow
   float shadow = ShadowCalculation(FragPosLightSpace, light.position);
-    shadow = min(shadow, 0.75);
 
-  float dark = 1;
-  float radius = sqrt(light.position.y * light.position.y + light.position.x + light.position.x); 
-  if (light.position.y <= -0.5f){
-	dark = max(light.position.x / radius, 0.05f);
-  }
-   
-  return ambient + (1.0 - shadow) * (diffuse + specular) * dark;
+  //float dark = 1;
+  //float radius = sqrt(light.position.y * light.position.y + light.position.x * light.position.x);
+  //if (light.position.y <= -0.5f) {
+  //  dark = max(light.position.x / radius, 0.05f);
+  //}
+
+  return (ambient + (1.0 - shadow) * (diffuse + specular)) * attenuation;
+  //return (ambient + diffuse + specular) * attenuation;
 }
 
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
@@ -153,12 +149,11 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
   float theta = dot(lightDir, normalize(-light.direction));
   float epsilon = light.cutoff - light.outerCutoff;
   float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
-  
+
   // Calculate shadow
   float shadow = ShadowCalculation(FragPosLightSpace, light.position);
-    shadow = min(shadow, 0.75);
-   
-  return ambient + (1.0 - shadow) * (diffuse + specular);
+
+  return ambient + (diffuse + specular) * intensity;
 }
 
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightPos)
@@ -168,7 +163,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightPos)
     // Transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
     // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
     // Get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     // Calculate bias (based on depth map resolution and slope)
@@ -184,15 +179,16 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightPos)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
-        }    
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;
+        }
     }
-    shadow /= 30.0;
-    
+    shadow /= 10.0;
+
     // Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
         shadow = 0.0;
-        
-    return shadow;
+
+    return min(shadow, 0.75);
 }
+

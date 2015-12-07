@@ -45,7 +45,8 @@ auto rand_rotate = std::bind(rand_rotate_dist, rand_generator);
 auto rand_scale = std::bind(rand_scale_dist, rand_generator);
 
 //xzh
-void RenderScene(Shader &shader);
+void RenderFloor(Shader &shader);
+void RenderCubes(Shader &shader);
 void RenderCube();
 GLuint planeVAO;
 
@@ -116,7 +117,7 @@ int main() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+  GLfloat borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
   glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
   glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
@@ -142,8 +143,8 @@ int main() {
   std::cout << "Models loaded!" << std::endl;
 
   std::cout << "Loading extra textures..." << std::endl;
-  GLuint domeColor = load_texture("data/textures/sky.png");
-  GLuint domeGlow = load_texture("data/textures/glow.png");
+  GLuint domeColor = load_texture("data/textures/sky.png", GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+  GLuint domeGlow = load_texture("data/textures/glow.png", GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
 
   Sprite sun("data/textures/sun.png");
   Sprite moon("data/textures/moon.png");
@@ -195,7 +196,7 @@ int main() {
     moonModel = glm::translate(moonModel, glm::vec3(3.5f, 0.0f, 0.0f));
 
     // directional light
-    DirLight dirLight(-sunPos);
+    DirLight dirLight(-sunPos, glm::vec3(0.8f, 0.8f, 0.8f));
 
     // point light
     GLfloat light_pos_angle = glm::radians(60.0f * current_frame);
@@ -220,16 +221,12 @@ int main() {
     spotLight.SetUniforms(shaders, "spotLight");
     shaders.SetUniform("material.shininess", 16.0f);
 
-    glm::mat4 nmodel = glm::translate(glm::mat4(), glm::vec3(-1.2f, 0.5f, -2.0f));
-    nmodel = glm::scale(nmodel, glm::vec3(0.1f, 0.1f, 0.1f));
-    shaders.SetUniform("model", nmodel);
-
     colorShaders.Use();
     colorShaders.SetUniform("view", view);
     colorShaders.SetUniform("projection", projection);
     colorShaders.SetUniform("ViewPos", camera.Position);
     dirLight.SetUniforms(colorShaders, "dirLight");
-    pointLight.SetUniforms(colorShaders, "pointLights[0]");
+    //pointLight.SetUniforms(colorShaders, "pointLights[0]");
     colorShaders.SetUniform("pointLightCount", 0);
     spotLight.SetUniforms(colorShaders, "spotLight");
     colorShaders.SetUniform("material.shininess", 1.8f);
@@ -270,13 +267,12 @@ int main() {
     domeShaders.Use();
     domeShaders.SetUniform("view", view);
     domeShaders.SetUniform("projection", projection);
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE7);
     glBindTexture(GL_TEXTURE_2D, domeColor);
-    domeShaders.SetUniform("domeColor", 0);
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE8);
     glBindTexture(GL_TEXTURE_2D, domeGlow);
-    domeShaders.SetUniform("glow", 1);
-    glActiveTexture(GL_TEXTURE0);
+    domeShaders.SetUniform("domeColor", 7);
+    domeShaders.SetUniform("glow", 8);
     glm::mat4 dmodel;
     dmodel = glm::scale(dmodel, glm::vec3(4.0f, 4.0f, 4.0f));
     domeShaders.SetUniform("model", dmodel);
@@ -306,9 +302,15 @@ int main() {
     //xzhs
     // Set texture samples
     shaders.Use();
-    shaders.SetUniform("material.texture_diffuse1", 0);
-    shaders.SetUniform("material.texture_specular1", 0);
-    shaders.SetUniform("shadowMap", 1);
+    glActiveTexture(GL_TEXTURE13);
+    glBindTexture(GL_TEXTURE_2D, woodTexture);
+    glActiveTexture(GL_TEXTURE14);
+    glBindTexture(GL_TEXTURE_2D, rockTexture);
+    glActiveTexture(GL_TEXTURE15);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    shaders.SetUniform("material.texture_diffuse1", 14);
+    shaders.SetUniform("material.texture_specular1", 14);
+    shaders.SetUniform("shadowMap", 15);
 
     // 1. Render depth of scene to texture (from light's perspective)
     // - Get light projection/view matrix.
@@ -322,15 +324,18 @@ int main() {
     // - now render scene from light's point of view
     simpleDepthShader.Use();
     simpleDepthShader.SetUniform("lightSpaceMatrix", lightSpaceMatrix);
+
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
-    RenderScene(simpleDepthShader);
+    RenderFloor(simpleDepthShader);
+    RenderCubes(simpleDepthShader);
 
-    glm::mat4 model;
-    model = glm::translate(model, glm::vec3(0.1f, 0.3f, 1.0f));
-    model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
-    simpleDepthShader.SetUniform("model", model);
+    glm::mat4 nmodel;
+    nmodel = glm::translate(nmodel, glm::vec3(0.1f, 0.3f, -0.5f));
+    nmodel = glm::rotate(nmodel, glm::radians(70.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    nmodel = glm::scale(nmodel, glm::vec3(0.05f, 0.05f, 0.05f));
+    simpleDepthShader.SetUniform("model", nmodel);
     ourModel.Draw(simpleDepthShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -340,28 +345,24 @@ int main() {
     shaders.Use();
     shaders.SetUniform("projection", projection);
     shaders.SetUniform("view", view);
-    // Set light uniforms
-    PointLight sunPointLight(sunPos, glm::vec3(0.02f, 0.02f, 0.02f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     shaders.SetUniform("ViewPos", camera.Position);
-    sunPointLight.SetUniforms(shaders, "pointLights[0]");
+    // Set light uniforms
+    // PointLight sunPointLight(sunPos, glm::vec3(0.02f, 0.02f, 0.02f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+    // sunPointLight.SetUniforms(shaders, "pointLights[0]");
+    // shaders.SetUniform("pointLightCount", 0);
+    dirLight.SetUniforms(shaders, "dirLight");
+    shaders.SetUniform("pointLightCount", 0);
 
     shaders.SetUniform("lightSpaceMatrix", lightSpaceMatrix);
 
-    glUniform1i(glGetUniformLocation(shaders.Program, "pointLightCount"), 1);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, woodTexture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    RenderScene(shaders);
-
-    glActiveTexture(GL_TEXTURE15);
-    glBindTexture(GL_TEXTURE_2D, woodTexture);
-    shaders.SetUniform("material.texture_diffuse1", 1);
-    shaders.SetUniform("material.texture_specular1", 1);
-    glActiveTexture(GL_TEXTURE16);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    shaders.SetUniform("shadowMap", 16);
-    shaders.SetUniform("model", model);
+    shaders.SetUniform("material.texture_diffuse1", 14);
+    shaders.SetUniform("material.texture_specular1", 14);
+    shaders.SetUniform("shadowMap", 15);
+    RenderFloor(shaders);
+    shaders.SetUniform("material.texture_diffuse1", 13);
+    shaders.SetUniform("material.texture_specular1", 13);
+    RenderCubes(shaders);
+    shaders.SetUniform("model", nmodel);
     ourModel.Draw(shaders);
     //xzhe
 
@@ -372,9 +373,9 @@ int main() {
   return 0;
 }
 
-int display_mode = 0;
-int point_size = 1;
-void key_callback(GLFWwindow * window, int key, int scancode, int action, int mode) {
+void key_callback(GLFWwindow * window, int key, int /* scancode */, int action, int /* mode */) {
+  static int display_mode = 0;
+  static int point_size = 1;
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GL_TRUE);
   } else if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
@@ -410,10 +411,10 @@ void do_movement(double delta_time) {
     camera.DoKeyboard(RIGHT, delta_time);
 }
 
-bool mouse_first = true;
-double mouse_lastx = 0.0;
-double mouse_lasty = 0.0;
-void cursor_callback(GLFWwindow * window, double xpos, double ypos) {
+void cursor_callback(GLFWwindow * /* window */, double xpos, double ypos) {
+  static bool mouse_first = true;
+  static double mouse_lastx = 0.0;
+  static double mouse_lasty = 0.0;
   if (mouse_first) {
     mouse_lastx = xpos;
     mouse_lasty = ypos;
@@ -426,13 +427,11 @@ void cursor_callback(GLFWwindow * window, double xpos, double ypos) {
   camera.DoMouseCursor(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow * window, double xoffset, double yoffset) {
+void scroll_callback(GLFWwindow * /* window */, double /* xoffset */, double yoffset) {
   camera.DoMouseScroll(yoffset);
 }
 
-//xzhs
-void RenderScene(Shader &shader)
-{
+void RenderFloor(Shader &shader) {
   // Floor
   glm::mat4 model = glm::mat4();
   model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.3f, 0.0f));
@@ -441,7 +440,12 @@ void RenderScene(Shader &shader)
   glBindVertexArray(planeVAO);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindVertexArray(0);
+}
+
+//xzhs
+void RenderCubes(Shader &shader) {
   // Cubes
+  glm::mat4 model = glm::mat4();
   model = glm::mat4();
   model = glm::translate(model, glm::vec3(0.2f, 0.4f, 0.5f));
   model = glm::rotate(model, (GLfloat)glfwGetTime() * 5.0f, glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
@@ -505,10 +509,9 @@ GLfloat vertices[] = {
 };
 
 // RenderCube() Renders a 1x1 3D cube in NDC.
-GLuint cubeVAO = 0;
-GLuint cubeVBO = 0;
-void RenderCube()
-{
+void RenderCube() {
+  static GLuint cubeVAO = 0;
+  static GLuint cubeVBO = 0;
   // Initialize (if necessary)
   if (cubeVAO == 0) {
     glGenVertexArrays(1, &cubeVAO);
