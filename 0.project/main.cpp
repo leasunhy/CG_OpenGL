@@ -145,8 +145,8 @@ int main() {
   std::cout << "Models loaded!" << std::endl;
 
   std::cout << "Loading extra textures..." << std::endl;
-  GLuint domeColor = load_texture("data/textures/sky.png", GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
-  GLuint domeGlow = load_texture("data/textures/glow.png", GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+  GLuint domeColor = load_texture("data/textures/sky.png", true, GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+  GLuint domeGlow = load_texture("data/textures/glow.png", true, GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
 
   Sprite sun("data/textures/sun.png");
   Sprite moon("data/textures/moon.png");

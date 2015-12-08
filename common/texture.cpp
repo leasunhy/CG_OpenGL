@@ -1,22 +1,40 @@
 #include <iostream>
-#include <IL/il.h>
-//#include <SOIL/SOIL.h>
+#include <algorithm>
 #include <GL/glew.h>
 #include "common/texture.h"
+
+#ifdef USE_IL
+#include <IL/il.h>
+#else
+#include <SOIL/SOIL.h>
+#endif
 
 void init_texture_loading() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#ifdef USE_IL
   ilInit();
+#endif
 }
 
-GLuint load_texture(const std::string& filename, GLenum wrap_s, GLenum wrap_t) {
-  int width, height;
-  std::cout << "loading texture: " << filename << std::endl;
-  //unsigned char * data = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGBA);
+void flip_image(unsigned char * data, int width, int height, int channels) {
+  int row_width = width * channels;
+  for (int row = 0; row < height / 2; ++row) {
+    int rrow = height - row - 1;
+    for (int i = 0; i < row_width; ++i)
+      std::swap(data[row * row_width + i], data[rrow * row_width + i]);
+  }
+}
 
+GLuint load_texture(const std::string& filename, bool flipY, GLenum wrap_s, GLenum wrap_t) {
+  int width, height, channels;
+  std::cout << "loading texture: " << filename << std::endl;
+
+#ifndef USE_IL
+  unsigned char * data = SOIL_load_image(filename.c_str(), &width, &height, &channels, SOIL_LOAD_RGBA);
+#else
   ILuint ihandle;
   ilEnable(IL_ORIGIN_SET);
   ilGenImages(1, &ihandle);
@@ -29,6 +47,10 @@ GLuint load_texture(const std::string& filename, GLenum wrap_s, GLenum wrap_t) {
   int memory_needed = width * height * 4 * sizeof(unsigned char);
   unsigned char * data = new unsigned char[memory_needed];
   ilCopyPixels(0, 0, 0, width, height, 1, IL_RGBA, IL_UNSIGNED_BYTE, data);
+#endif
+
+  if (flipY)
+    flip_image(data, width, height, 4);  // # of channels set to 4
 
   GLuint id;
   glGenTextures(1, &id);
@@ -40,10 +62,12 @@ GLuint load_texture(const std::string& filename, GLenum wrap_s, GLenum wrap_t) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
   glGenerateMipmap(GL_TEXTURE_2D);
 
-  //SOIL_free_image_data(data);
-
+#ifndef USE_IL
+  SOIL_free_image_data(data);
+#else
   ilDeleteImages(1, &ihandle);
   delete [] data;
+#endif
 
   glBindTexture(GL_TEXTURE_2D, 0);
   return id;
